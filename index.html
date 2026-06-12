@@ -495,8 +495,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section-label">Vistas</div>
-      <div class="nav-item" onclick="setView('summary');closeSidebar()"><span class="icon">📊</span><span>Resumen Ejecutivo</span></div>
-      <div class="nav-item active" onclick="setView('daily');closeSidebar()"><span class="icon">🌤</span><span>Diaria</span></div>
+      <div class="nav-item active" onclick="setView('summary');closeSidebar()"><span class="icon">📊</span><span>Resumen Ejecutivo</span></div>
+      <div class="nav-item" onclick="setView('daily');closeSidebar()"><span class="icon">🌤</span><span>Diaria</span></div>
       <div class="nav-item" onclick="setView('weekly');closeSidebar()"><span class="icon">📅</span><span>Semanal</span></div>
       <div class="nav-item" onclick="setView('monthly');closeSidebar()"><span class="icon">🗓️</span><span>Mensual</span></div>
       <div class="nav-item" onclick="setView('list');closeSidebar()"><span class="icon">📝</span><span>Lista</span></div>
@@ -521,7 +521,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
   <main id="main">
     <header id="topbar">
       <button class="topbar-menu-btn" onclick="openSidebar()">☰</button>
-      <span class="topbar-title" id="view-title">Vista Diaria</span>
+      <span class="topbar-title" id="view-title">Resumen Ejecutivo</span>
       <div class="search-wrap"><input type="text" id="search-input" placeholder="Buscar tareas…" oninput="applyFilters()"></div>
       <button class="topbar-filter-btn" id="topbar-filter-btn" onclick="openFilterDrawer()" title="Filtros">⚙</button>
       <button class="btn-new" id="btn-new-task" onclick="openNewTask()">＋ Nueva Tarea</button>
@@ -640,7 +640,7 @@ const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 const supa=supabase.createClient(SUPA_URL,SUPA_KEY);
 
 // ── STATE ──
-let currentView='daily',currentWeekStart=getWeekStart(new Date()),currentDay=new Date(),currentMonth=new Date();
+let currentView='summary',currentWeekStart=getWeekStart(new Date()),currentDay=new Date(),currentMonth=new Date();
 let tasks=[],members=[],tags=[];
 let editingTaskId=null,editingUserId=null,changePwdUserId=null;
 let currentUser=null,currentMember=null,isAdmin=false;
@@ -684,7 +684,7 @@ async function onLogin(user){
   document.getElementById('reset-screen').classList.remove('show');
   document.getElementById('app').classList.add('show');
   renderSidebarUser();applyRoleUI();
-  await loadData();updateWeekDisplay();renderView();
+  await loadData();updateWeekDisplay();setView(currentView);
 }
 async function doLogout(){
   await supa.auth.signOut();
