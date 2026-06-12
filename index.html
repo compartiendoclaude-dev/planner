@@ -156,6 +156,25 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
 
 /* ══ WEEKLY ══ */
 .weekly-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;}
+.monthly-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+.month-day-cell{background:var(--bg-surface);border-radius:var(--radius-sm);border:1px solid var(--border);min-height:96px;display:flex;flex-direction:column;overflow:hidden;cursor:pointer;transition:border-color .15s;}
+.month-day-cell:hover{border-color:var(--border-strong);}
+.month-day-cell.other-month{opacity:.35;}
+.month-day-cell.today{border-color:rgba(124,58,237,.4);}
+.month-day-header{display:flex;align-items:center;justify-content:space-between;padding:6px 7px 2px;}
+.month-day-number{font-size:12px;font-weight:700;color:var(--text-secondary);width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:50%;}
+.month-day-cell.today .month-day-number{background:var(--accent);color:#fff;}
+.month-day-tasks{padding:0 5px 5px;display:flex;flex-direction:column;gap:3px;overflow:hidden;flex:1;}
+.month-task-pill{font-size:10px;padding:2px 5px;border-radius:4px;border-left:2px solid transparent;background:var(--bg-card);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;}
+.month-task-pill.priority-high{border-left-color:var(--s-high);}
+.month-task-pill.priority-medium{border-left-color:var(--s-medium);}
+.month-task-pill.priority-low{border-left-color:var(--s-low);}
+.month-task-pill.status-completed{opacity:.5;}
+.month-more{font-size:9px;color:var(--text-muted);padding:1px 5px;}
+.month-weekday-labels{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px;}
+.month-weekday-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);text-align:center;padding:4px 0;}
+.month-nav{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.month-nav-title{font-size:16px;font-weight:700;flex:1;text-align:center;text-transform:capitalize;}
 .day-col{background:var(--bg-surface);border-radius:var(--radius);border:1px solid var(--border);min-height:480px;display:flex;flex-direction:column;overflow:hidden;}
 .day-header{padding:10px 10px 8px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:2px;}
 .day-name{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);}
@@ -213,16 +232,24 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
 
 /* ══ KANBAN ══ */
 .kanban-board{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;align-items:start;}
+.kanban-tip{background:var(--accent-glow);border:1px solid rgba(124,58,237,.25);border-radius:var(--radius-sm);padding:10px 14px;font-size:12px;color:var(--accent-light);margin-bottom:14px;line-height:1.5;}
 .kanban-col{background:var(--bg-surface);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;}
-.kanban-col-header{padding:12px 14px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.kanban-col-header{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.kanban-col-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
 .kanban-col-title{font-size:13px;font-weight:700;}
-.kanban-col-count{margin-left:auto;font-size:11px;font-weight:600;color:var(--text-muted);background:var(--bg-card);padding:2px 8px;border-radius:99px;}
+.kanban-col-hint{font-size:10px;color:var(--text-muted);margin-top:1px;}
+.kanban-col-count{margin-left:auto;font-size:11px;font-weight:600;color:var(--text-muted);background:var(--bg-card);padding:2px 8px;border-radius:99px;flex-shrink:0;}
 .kanban-cards{padding:8px;display:flex;flex-direction:column;gap:7px;min-height:60px;}
 .kanban-card{background:var(--bg-card);border-radius:8px;padding:10px 11px;border:1px solid var(--border);cursor:pointer;transition:all .15s;}
 .kanban-card:active{transform:scale(.98);}
-.kanban-card-title{font-size:13px;font-weight:600;margin-bottom:5px;}
-.kanban-card-desc{font-size:11px;color:var(--text-secondary);margin-bottom:7px;line-height:1.4;}
-.kanban-card-footer{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+.kanban-card-title{font-size:13px;font-weight:600;margin-bottom:7px;display:flex;align-items:center;gap:7px;line-height:1.4;}
+.kanban-priority-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.kanban-priority-dot.priority-high{background:var(--s-high);}
+.kanban-priority-dot.priority-medium{background:var(--s-medium);}
+.kanban-priority-dot.priority-low{background:var(--s-low);}
+.kanban-card-footer{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.kanban-card-date{font-size:10px;color:var(--text-muted);}
+.kanban-empty{text-align:center;padding:16px;font-size:12px;color:var(--text-muted);}
 
 /* ══ BADGES ══ */
 .badge{display:inline-flex;align-items:center;gap:3px;padding:3px 7px;border-radius:99px;font-size:11px;font-weight:600;}
@@ -245,6 +272,22 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
 .stat-card.s-cyan .stat-number{color:var(--cyan);}
 .stat-card.s-green .stat-number{color:var(--s-low);}
 .stat-card.s-purple .stat-number{color:var(--accent-light);}
+
+/* ══ SUMMARY (RESUMEN EJECUTIVO) ══ */
+.summary-intro{background:var(--accent-glow);border:1px solid rgba(124,58,237,.25);border-radius:var(--radius-sm);padding:10px 14px;font-size:12px;color:var(--accent-light);margin-bottom:16px;line-height:1.5;}
+.summary-section-title{font-size:13px;font-weight:700;color:var(--text-primary);margin:18px 0 8px;}
+.summary-day-table{display:flex;flex-direction:column;gap:6px;background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px;}
+.summary-day-row{display:grid;grid-template-columns:70px 1fr 50px 46px;align-items:center;gap:10px;padding:6px 4px;border-radius:6px;}
+.summary-day-row.today{background:var(--accent-glow);}
+.summary-day-label{font-size:12px;font-weight:600;color:var(--text-secondary);}
+.summary-today-tag{font-size:9px;font-weight:700;color:var(--accent-light);background:rgba(124,58,237,.2);padding:1px 5px;border-radius:99px;}
+.summary-day-bar{height:8px;border-radius:99px;background:var(--bg-card);overflow:hidden;}
+.summary-day-bar-fill{height:100%;border-radius:99px;transition:width .3s ease;}
+.summary-day-figures{font-size:11px;color:var(--text-muted);text-align:right;}
+.summary-day-pct{font-size:12px;font-weight:700;text-align:right;}
+.summary-status-legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px;font-size:12px;color:var(--text-secondary);}
+.summary-status-legend span{display:flex;align-items:center;gap:6px;}
+.summary-status-legend .status-dot{margin-left:0;}
 
 /* ══ MODALS ══ */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:400;display:flex;align-items:flex-end;justify-content:center;padding:0;backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .2s;}
@@ -371,6 +414,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
   .topbar-filter-btn{display:flex;}
   .search-wrap{display:none;}
   .weekly-grid{grid-template-columns:repeat(3,1fr);}
+  .monthly-grid{gap:4px;}
+  .month-day-cell{min-height:74px;}
   .kanban-board{grid-template-columns:repeat(2,1fr);}
   #content{padding:14px 14px;}
 }
@@ -382,6 +427,13 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
   #main{padding-bottom:calc(var(--bottom-nav-h) + var(--safe-bottom));}
   #content{padding:12px 12px 20px;}
   .weekly-grid{grid-template-columns:repeat(2,1fr);}
+  .summary-day-row{grid-template-columns:48px 1fr 40px 38px;gap:6px;}
+  .summary-day-label{font-size:11px;}
+  .month-day-cell{min-height:56px;}
+  .month-day-header{padding:3px 4px 0;}
+  .month-day-number{font-size:10px;width:18px;height:18px;}
+  .month-task-pill{font-size:8px;padding:1px 3px;}
+  .month-weekday-label{font-size:9px;}
   .kanban-board{grid-template-columns:1fr;}
   .stats-row{grid-template-columns:repeat(2,1fr);}
   .form-row{grid-template-columns:1fr;}
@@ -443,8 +495,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section-label">Vistas</div>
-      <div class="nav-item active" onclick="setView('weekly');closeSidebar()"><span class="icon">📅</span><span>Semanal</span></div>
-      <div class="nav-item" onclick="setView('daily');closeSidebar()"><span class="icon">🌤</span><span>Diaria</span></div>
+      <div class="nav-item" onclick="setView('summary');closeSidebar()"><span class="icon">📊</span><span>Resumen Ejecutivo</span></div>
+      <div class="nav-item active" onclick="setView('daily');closeSidebar()"><span class="icon">🌤</span><span>Diaria</span></div>
+      <div class="nav-item" onclick="setView('weekly');closeSidebar()"><span class="icon">📅</span><span>Semanal</span></div>
+      <div class="nav-item" onclick="setView('monthly');closeSidebar()"><span class="icon">🗓️</span><span>Mensual</span></div>
       <div class="nav-item" onclick="setView('list');closeSidebar()"><span class="icon">📝</span><span>Lista</span></div>
       <div class="nav-item" onclick="setView('kanban');closeSidebar()"><span class="icon">🗂</span><span>Kanban</span></div>
       <div class="nav-section-label" style="margin-top:10px">Gestión</div>
@@ -467,7 +521,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
   <main id="main">
     <header id="topbar">
       <button class="topbar-menu-btn" onclick="openSidebar()">☰</button>
-      <span class="topbar-title" id="view-title">Vista Semanal</span>
+      <span class="topbar-title" id="view-title">Vista Diaria</span>
       <div class="search-wrap"><input type="text" id="search-input" placeholder="Buscar tareas…" oninput="applyFilters()"></div>
       <button class="topbar-filter-btn" id="topbar-filter-btn" onclick="openFilterDrawer()" title="Filtros">⚙</button>
       <button class="btn-new" id="btn-new-task" onclick="openNewTask()">＋ Nueva Tarea</button>
@@ -480,8 +534,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
   <!-- Bottom nav (mobile) -->
   <nav id="bottom-nav">
     <div class="bottom-nav-inner">
-      <div class="bn-item active" id="bn-weekly" onclick="setView('weekly')"><div class="bn-icon">📅</div><div class="bn-label">Semana</div></div>
-      <div class="bn-item" id="bn-daily" onclick="setView('daily')"><div class="bn-icon">🌤</div><div class="bn-label">Día</div></div>
+      <div class="bn-item active" id="bn-daily" onclick="setView('daily')"><div class="bn-icon">🌤</div><div class="bn-label">Día</div></div>
+      <div class="bn-item" id="bn-weekly" onclick="setView('weekly')"><div class="bn-icon">📅</div><div class="bn-label">Semana</div></div>
+      <div class="bn-item" id="bn-monthly" onclick="setView('monthly')"><div class="bn-icon">🗓️</div><div class="bn-label">Mes</div></div>
       <button class="bn-fab" onclick="openNewTask()">＋</button>
       <div class="bn-item" id="bn-list" onclick="setView('list')"><div class="bn-icon">📝</div><div class="bn-label">Lista</div></div>
       <div class="bn-item" id="bn-kanban" onclick="setView('kanban')"><div class="bn-icon">🗂</div><div class="bn-label">Kanban</div></div>
@@ -585,7 +640,7 @@ const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 const supa=supabase.createClient(SUPA_URL,SUPA_KEY);
 
 // ── STATE ──
-let currentView='weekly',currentWeekStart=getWeekStart(new Date()),currentDay=new Date();
+let currentView='daily',currentWeekStart=getWeekStart(new Date()),currentDay=new Date(),currentMonth=new Date();
 let tasks=[],members=[],tags=[];
 let editingTaskId=null,editingUserId=null,changePwdUserId=null;
 let currentUser=null,currentMember=null,isAdmin=false;
@@ -869,11 +924,11 @@ function filteredTasks(list){
 // ── NAV ──
 function setView(view){
   currentView=view;
-  const titles={weekly:'Vista Semanal',daily:'Vista Diaria',list:'Lista de Tareas',kanban:'Tablero Kanban',users:'Usuarios',settings:'Equipo & Etiquetas'};
+  const titles={summary:'Resumen Ejecutivo',weekly:'Vista Semanal',daily:'Vista Diaria',monthly:'Vista Mensual',list:'Lista de Tareas',kanban:'Tablero Kanban',users:'Usuarios',settings:'Equipo & Etiquetas'};
   document.getElementById('view-title').textContent=titles[view]||'';
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.toggle('active',(el.getAttribute('onclick')||'').includes(`'${view}'`)));
-  ['weekly','daily','list','kanban'].forEach(v=>{const el=document.getElementById('bn-'+v);if(el)el.classList.toggle('active',v===view);});
-  const hideNew=view==='settings'||view==='users';
+  ['summary','daily','weekly','monthly','list','kanban'].forEach(v=>{const el=document.getElementById('bn-'+v);if(el)el.classList.toggle('active',v===view);});
+  const hideNew=view==='settings'||view==='users'||view==='summary';
   document.getElementById('btn-new-task').classList.toggle('hidden',hideNew);
   document.getElementById('topbar-filter-btn').style.display=hideNew?'none':'';
   renderView();
@@ -887,8 +942,10 @@ function updateWeekDisplay(){
 // ── RENDER ──
 function renderView(){
   switch(currentView){
+    case 'summary':renderSummary();break;
     case 'weekly':renderWeekly();break;
     case 'daily':renderDaily();break;
+    case 'monthly':renderMonthly();break;
     case 'list':renderList();break;
     case 'kanban':renderKanban();break;
     case 'users':renderUsers();break;
@@ -906,6 +963,92 @@ function expandTasks(rawTasks,weekStart,weekEnd){
     out.push(t);
   }
   return out;
+}
+
+// ── SUMMARY (RESUMEN EJECUTIVO) ──
+function renderSummary(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const todayStr=fmtDate(today);
+  const todayDow=(today.getDay()+6)%7;
+  const weekStart=getWeekStart(today),weekEnd=addDays(weekStart,6);
+
+  // Expand recurrences for the current week and filter same as other views
+  const expanded=expandTasks(tasks,weekStart,weekEnd);
+  const filtered=filteredTasks(expanded);
+
+  // Tasks scheduled for today
+  const todayTasks=filtered.filter(t=>(t.specific_date&&t.specific_date===todayStr)||(t.specific_date==null&&t.day_of_week===todayDow));
+  const todayDone=todayTasks.filter(t=>t.status==='completed').length;
+  const todayTotal=todayTasks.length;
+  const todayPct=todayTotal?Math.round((todayDone/todayTotal)*100):0;
+
+  // Tasks scheduled for the current week
+  let weekTotal=0,weekDone=0;
+  for(let i=0;i<7;i++){
+    const d=addDays(weekStart,i),dateStr=fmtDate(d);
+    const dt=filtered.filter(t=>(t.specific_date&&t.specific_date===dateStr)||(t.specific_date==null&&t.day_of_week===i));
+    weekTotal+=dt.length;
+    weekDone+=dt.filter(t=>t.status==='completed').length;
+  }
+  const weekPct=weekTotal?Math.round((weekDone/weekTotal)*100):0;
+
+  // Breakdown by day of the current week
+  const dayRows=[];
+  for(let i=0;i<7;i++){
+    const d=addDays(weekStart,i),dateStr=fmtDate(d),isToday=d.getTime()===today.getTime();
+    const dt=filtered.filter(t=>(t.specific_date&&t.specific_date===dateStr)||(t.specific_date==null&&t.day_of_week===i));
+    const done=dt.filter(t=>t.status==='completed').length;
+    const total=dt.length;
+    const pct=total?Math.round((done/total)*100):0;
+    dayRows.push({label:dayName(i),dateStr,isToday,done,total,pct});
+  }
+
+  // Status breakdown for the week
+  const statusCounts={pending:0,in_progress:0,completed:0,blocked:0};
+  filtered.forEach(t=>{
+    let inWeek=false;
+    if(t.specific_date)inWeek=t.specific_date>=fmtDate(weekStart)&&t.specific_date<=fmtDate(weekEnd);
+    else if(t.day_of_week!=null)inWeek=true;
+    if(inWeek&&statusCounts[t.status]!=null)statusCounts[t.status]++;
+  });
+
+  const pctColor=p=>p>=80?'var(--st-done)':p>=50?'var(--s-medium)':'var(--s-high)';
+
+  const dayRowsHtml=dayRows.map(d=>`
+    <div class="summary-day-row ${d.isToday?'today':''}">
+      <div class="summary-day-label">${d.label}${d.isToday?' <span class="summary-today-tag">Hoy</span>':''}</div>
+      <div class="summary-day-bar"><div class="summary-day-bar-fill" style="width:${d.pct}%;background:${pctColor(d.pct)}"></div></div>
+      <div class="summary-day-figures">${d.done}/${d.total}</div>
+      <div class="summary-day-pct" style="color:${pctColor(d.pct)}">${d.pct}%</div>
+    </div>`).join('');
+
+  document.getElementById('content').innerHTML=`
+    <div class="summary-intro">📊 Indicadores de cumplimiento de tareas — actualizados en tiempo real según las tareas de hoy y de la semana actual (${fmt(weekStart,{day:'numeric',month:'short'})} – ${fmt(weekEnd,{day:'numeric',month:'short'})}).</div>
+
+    <div class="summary-section-title">Hoy — ${fmt(today,{weekday:'long',day:'numeric',month:'long'})}</div>
+    <div class="stats-row">
+      <div class="stat-card s-purple"><div class="stat-number">${todayTotal}</div><div class="stat-label">Tareas de hoy</div></div>
+      <div class="stat-card s-green"><div class="stat-number">${todayDone}</div><div class="stat-label">Completadas hoy</div></div>
+      <div class="stat-card" style="border:1px solid var(--border)"><div class="stat-number" style="color:${pctColor(todayPct)}">${todayPct}%</div><div class="stat-label">Cumplimiento de hoy</div></div>
+    </div>
+
+    <div class="summary-section-title">Esta semana</div>
+    <div class="stats-row">
+      <div class="stat-card s-purple"><div class="stat-number">${weekTotal}</div><div class="stat-label">Tareas de la semana</div></div>
+      <div class="stat-card s-green"><div class="stat-number">${weekDone}</div><div class="stat-label">Completadas en la semana</div></div>
+      <div class="stat-card" style="border:1px solid var(--border)"><div class="stat-number" style="color:${pctColor(weekPct)}">${weekPct}%</div><div class="stat-label">Cumplimiento semanal</div></div>
+      <div class="stat-card s-high"><div class="stat-number">${statusCounts.blocked}</div><div class="stat-label">Bloqueadas</div></div>
+    </div>
+
+    <div class="summary-section-title">Cumplimiento por día (esta semana)</div>
+    <div class="summary-day-table">${dayRowsHtml}</div>
+
+    <div class="summary-status-legend">
+      <span><span class="status-dot pending"></span> Pendiente: ${statusCounts.pending}</span>
+      <span><span class="status-dot in_progress"></span> En Progreso: ${statusCounts.in_progress}</span>
+      <span><span class="status-dot completed"></span> Completada: ${statusCounts.completed}</span>
+      <span><span class="status-dot blocked"></span> Bloqueada: ${statusCounts.blocked}</span>
+    </div>`;
 }
 
 // ── WEEKLY ──
@@ -933,6 +1076,56 @@ function taskCard(t){
     <div class="task-title">${t.title}${t.recurrence&&t.recurrence!=='once'?' 🔄':''}</div>
     <div class="task-meta"><div class="task-avatars">${avs}</div><span class="status-dot ${t.status}"></span></div>
   </div>`;
+}
+
+// ── MONTHLY ──
+function changeMonth(d){currentMonth=new Date(currentMonth.getFullYear(),currentMonth.getMonth()+d,1);renderView();}
+function renderMonthly(){
+  const year=currentMonth.getFullYear(),month=currentMonth.getMonth();
+  const firstOfMonth=new Date(year,month,1);
+  const gridStart=getWeekStart(firstOfMonth); // Monday on/before the 1st
+  const today=new Date();today.setHours(0,0,0,0);
+  const nav=`<div class="month-nav">
+    <button class="btn btn-ghost" style="padding:7px 12px" onclick="changeMonth(-1)">‹</button>
+    <span class="month-nav-title">${fmt(firstOfMonth,{month:'long',year:'numeric'})}</span>
+    <button class="btn btn-ghost" style="padding:7px 12px" onclick="changeMonth(1)">›</button>
+    <button class="btn btn-ghost" style="padding:7px 10px;font-size:12px" onclick="currentMonth=new Date();renderView()">Hoy</button>
+  </div>`;
+  const weekdayLabels=`<div class="month-weekday-labels">${['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'].map(d=>`<div class="month-weekday-label">${d}</div>`).join('')}</div>`;
+
+  // Number of weeks needed to cover the month
+  const lastOfMonth=new Date(year,month+1,0);
+  const totalDays=Math.ceil((((lastOfMonth-gridStart)/86400000)+1)/7)*7;
+
+  const allFiltered=[];
+  for(let w=0;w<totalDays;w+=7){
+    const weekStart=addDays(gridStart,w);
+    const weekEnd=addDays(weekStart,6);
+    const expanded=expandTasks(tasks,weekStart,weekEnd);
+    allFiltered.push(...filteredTasks(expanded));
+  }
+
+  let cells='';
+  for(let i=0;i<totalDays;i++){
+    const d=addDays(gridStart,i),dateStr=fmtDate(d),dow=(d.getDay()+6)%7;
+    const isToday=d.getTime()===today.getTime();
+    const isOtherMonth=d.getMonth()!==month;
+    const dt=allFiltered.filter(t=>(t.specific_date&&t.specific_date===dateStr)||(t.specific_date==null&&t.day_of_week===dow&&!isOtherMonth));
+    const dedup=[];const seen=new Set();
+    for(const t of dt){const key=t.id+'_'+(t._v?dateStr:'');if(!seen.has(key)){seen.add(key);dedup.push(t);}}
+    const maxShow=3;
+    const pills=dedup.slice(0,maxShow).map(t=>`<div class="month-task-pill priority-${t.priority} status-${t.status}" onclick="event.stopPropagation();editTask('${t.id}')">${t.time_slot?t.time_slot.slice(0,5)+' ':''}${t.title}</div>`).join('');
+    const more=dedup.length>maxShow?`<div class="month-more">+${dedup.length-maxShow} más</div>`:'';
+    cells+=`<div class="month-day-cell ${isToday?'today':''} ${isOtherMonth?'other-month':''}" onclick="openMonthDay('${dateStr}',${dow})">
+      <div class="month-day-header"><span class="month-day-number">${d.getDate()}</span></div>
+      <div class="month-day-tasks">${pills}${more}</div>
+    </div>`;
+  }
+  document.getElementById('content').innerHTML=`${renderStats(allFiltered.filter((t,i,arr)=>arr.findIndex(x=>x.id===t.id&&(!x._v||x.specific_date===t.specific_date))===i))}${nav}${weekdayLabels}<div class="monthly-grid">${cells}</div>`;
+}
+function openMonthDay(dateStr,dow){
+  currentDay=new Date(dateStr+'T12:00:00');
+  setView('daily');
 }
 
 // ── DAILY ──
@@ -987,26 +1180,46 @@ function renderList(){
 // ── KANBAN ──
 function renderKanban(){
   const filtered=filteredTasks(tasks);
-  const cols=[{id:'pending',label:'Pendiente',icon:'⏸',c:'var(--st-pending)'},{id:'in_progress',label:'En Progreso',icon:'▶',c:'var(--st-progress)'},{id:'completed',label:'Completada',icon:'✓',c:'var(--st-done)'},{id:'blocked',label:'Bloqueada',icon:'⛔',c:'var(--st-blocked)'}];
+  const cols=[
+    {id:'pending',label:'Pendiente',icon:'⏸',c:'var(--st-pending)',hint:'Tareas por iniciar'},
+    {id:'in_progress',label:'En Progreso',icon:'▶',c:'var(--st-progress)',hint:'Se están trabajando ahora'},
+    {id:'completed',label:'Completada',icon:'✓',c:'var(--st-done)',hint:'Ya terminadas'},
+    {id:'blocked',label:'Bloqueada',icon:'⛔',c:'var(--st-blocked)',hint:'Esperando algo para continuar'},
+  ];
   const colsHtml=cols.map(col=>{
     const ct=filtered.filter(t=>t.status===col.id);
     const cards=ct.map(t=>{
       const avs=(t.assigned_to||[]).slice(0,3).map(id=>{const m=getMember(id);return m?`<div class="task-avatar" style="background:${m.avatar_color}22;color:${m.avatar_color}">${initials(m.name)}</div>`:''}).join('');
+      const dueLabel=t.specific_date?fmt(t.specific_date+'T12:00:00',{day:'numeric',month:'short'}):(t.day_of_week!=null?dayName(t.day_of_week):'');
       return `<div class="kanban-card" onclick="editTask('${t.id}')">
-        <div style="display:flex;gap:5px;margin-bottom:5px"><span class="badge badge-priority-${t.priority}" style="font-size:10px">${PL[t.priority]}</span></div>
-        <div class="kanban-card-title">${t.title}</div>
-        ${t.description?`<div class="kanban-card-desc">${t.description.slice(0,70)}${t.description.length>70?'…':''}</div>`:''}
-        <div class="kanban-card-footer"><div class="task-avatars">${avs}</div>${t.specific_date?`<span style="font-size:10px;color:var(--text-muted);margin-left:auto">${fmt(t.specific_date+'T12:00:00',{day:'numeric',month:'short'})}</span>`:''}</div>
+        <div class="kanban-card-title">
+          <span class="kanban-priority-dot priority-${t.priority}" title="Prioridad ${PL[t.priority]}"></span>
+          ${t.title}
+        </div>
+        <div class="kanban-card-footer">
+          <div class="task-avatars">${avs}</div>
+          ${dueLabel?`<span class="kanban-card-date">📅 ${dueLabel}</span>`:''}
+          ${t.time_slot?`<span class="kanban-card-date">⏰ ${t.time_slot.slice(0,5)}</span>`:''}
+        </div>
       </div>`;
     }).join('');
     return `<div class="kanban-col">
-      <div class="kanban-col-header"><span>${col.icon}</span><span class="kanban-col-title" style="color:${col.c}">${col.label}</span><span class="kanban-col-count">${ct.length}</span></div>
-      <div class="kanban-cards">${cards||`<div style="text-align:center;padding:16px;font-size:12px;color:var(--text-muted)">Sin tareas</div>`}
-        <div class="day-add" onclick="openNewTaskStatus('${col.id}')">＋</div>
+      <div class="kanban-col-header">
+        <span class="kanban-col-icon" style="background:${col.c}22;color:${col.c}">${col.icon}</span>
+        <div>
+          <div class="kanban-col-title">${col.label}</div>
+          <div class="kanban-col-hint">${col.hint}</div>
+        </div>
+        <span class="kanban-col-count">${ct.length}</span>
+      </div>
+      <div class="kanban-cards">${cards||`<div class="kanban-empty">Sin tareas aquí</div>`}
+        <div class="day-add" onclick="openNewTaskStatus('${col.id}')">＋ Agregar tarea</div>
       </div>
     </div>`;
   }).join('');
-  document.getElementById('content').innerHTML=`<div class="kanban-board">${colsHtml}</div>`;
+  document.getElementById('content').innerHTML=`
+    <div class="kanban-tip">💡 Toca una tarea para editarla. Cambia su <b>Estado</b> en el formulario para moverla de columna.</div>
+    <div class="kanban-board">${colsHtml}</div>`;
 }
 
 // ── USERS ──
