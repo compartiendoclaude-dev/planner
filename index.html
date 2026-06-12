@@ -495,34 +495,51 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
 
 
 /* ══ DRAG & DROP ══ */
-.task-card[draggable=true],.kanban-card[draggable=true]{cursor:grab;}
-.task-card[draggable=true]:active,.kanban-card[draggable=true]:active{cursor:grabbing;}
-.task-card.dragging,.kanban-card.dragging{opacity:.35;transform:scale(.97);box-shadow:0 8px 24px rgba(0,0,0,.4);}
-.drag-handle{
-  position:absolute;top:50%;right:8px;transform:translateY(-50%);
-  width:16px;display:flex;flex-direction:column;gap:3px;
-  align-items:center;justify-content:center;opacity:0;transition:opacity .15s;
-  cursor:grab;padding:4px 2px;
+/* Kanban cards — whole card is draggable */
+.kanban-card{cursor:grab;position:relative;}
+.kanban-card:active{cursor:grabbing;}
+/* Subtle grip dots always visible top-right */
+.kanban-card::before{
+  content:'⠿';
+  position:absolute;top:8px;right:8px;
+  font-size:12px;color:var(--text-muted);opacity:.35;
+  pointer-events:none;line-height:1;
 }
-.drag-handle span{display:block;width:12px;height:2px;background:var(--text-muted);border-radius:99px;}
-.kanban-card:hover .drag-handle,.task-card:hover .drag-handle{opacity:1;}
-/* Drop zone highlight */
+.kanban-card:hover::before{opacity:.7;}
+/* Weekly task cards */
+.task-card{cursor:grab;}
+.task-card:active{cursor:grabbing;}
+/* Sortable states */
+.sortable-ghost{
+  opacity:.25 !important;
+  background:var(--accent-glow) !important;
+  border:2px dashed rgba(124,58,237,.6) !important;
+  border-radius:var(--radius) !important;
+}
+.sortable-chosen{
+  box-shadow:0 12px 40px rgba(0,0,0,.6) !important;
+  transform:scale(1.03) !important;
+  z-index:999;
+  opacity:.95;
+}
+.sortable-drag{opacity:.95;}
+/* Drop zone — column lights up when card hovers over it */
 .kanban-cards.drag-over{
-  background:var(--accent-glow);
-  border:2px dashed rgba(124,58,237,.5);
+  background:rgba(124,58,237,.08);
+  outline:2px dashed rgba(124,58,237,.5);
+  outline-offset:-2px;
   border-radius:var(--radius-sm);
-  min-height:80px;
 }
 .day-tasks.drag-over{
-  background:var(--accent-glow);
-  border:2px dashed rgba(124,58,237,.4);
+  background:rgba(124,58,237,.08);
+  outline:2px dashed rgba(124,58,237,.4);
+  outline-offset:-2px;
   border-radius:var(--radius-sm);
 }
-/* Sortable ghost & chosen */
-.sortable-ghost{opacity:.2;background:var(--accent-glow)!important;border:1px dashed rgba(124,58,237,.5)!important;}
-.sortable-chosen{box-shadow:0 8px 32px rgba(0,0,0,.5)!important;transform:rotate(1deg)!important;}
-.sortable-drag{opacity:.9;}
-/* Drag badge shown during drag */
+/* Status change flash animation */
+@keyframes statusFlash{0%{background:rgba(16,185,129,.3);}100%{background:transparent;}}
+.kanban-card.just-moved{animation:statusFlash .6s ease;}
+/* Drag badge */
 .drag-badge{
   position:fixed;top:0;left:0;pointer-events:none;z-index:9999;
   background:var(--accent);color:#fff;font-size:11px;font-weight:700;
@@ -1507,7 +1524,6 @@ function renderKanban(){
       const avs=(t.assigned_to||[]).slice(0,3).map(id=>{const m=getMember(id);return m?`<div class="task-avatar" style="background:${m.avatar_color}22;color:${m.avatar_color}">${initials(m.name)}</div>`:''}).join('');
       const dueLabel=t.specific_date?fmt(t.specific_date+'T12:00:00',{day:'numeric',month:'short'}):(t.day_of_week!=null?dayName(t.day_of_week):'');
       return `<div class="kanban-card" data-id="${t.id}" data-status="${t.status}" onclick="handleKanbanClick(event,'${t.id}')">
-        <div class="drag-handle" title="Arrastrar"><span></span><span></span><span></span></div>
         <div class="kanban-card-title">
           <span class="kanban-priority-dot priority-${t.priority}" title="${PL[t.priority]}"></span>
           ${t.title}
@@ -1535,7 +1551,7 @@ function renderKanban(){
   document.getElementById('content').innerHTML=`
     <div class="kanban-tip" style="display:flex;align-items:center;gap:8px">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="12" y1="8" x2="12" y2="8"/></svg>
-      Arrastra las tarjetas entre columnas para cambiar su estado. En móvil mantén presionado para arrastrar.
+      Arrastra cualquier tarjeta entre columnas para cambiar su estado. Haz clic para editar.
     </div>
     <div class="kanban-board" id="kanban-board">${colsHtml}</div>`;
   initKanbanDnD();
@@ -1543,10 +1559,14 @@ function renderKanban(){
 
 // Handle click vs drag on kanban cards
 let _kanbanDragging=false;
+let _kanbanMouseDownPos={x:0,y:0};
+document.addEventListener('mousedown',e=>{_kanbanMouseDownPos={x:e.clientX,y:e.clientY};});
 function handleKanbanClick(e,id){
   if(_kanbanDragging)return;
-  // Don't open if click originated from drag handle
-  if(e.target.closest('.drag-handle'))return;
+  // If mouse moved more than 6px between mousedown and click, it was a drag
+  const dx=Math.abs(e.clientX-_kanbanMouseDownPos.x);
+  const dy=Math.abs(e.clientY-_kanbanMouseDownPos.y);
+  if(dx>6||dy>6)return;
   editTask(id);
 }
 
@@ -1557,26 +1577,47 @@ function initKanbanDnD(){
     const el=document.getElementById('kcol-'+status);
     if(!el)return;
     Sortable.create(el,{
-      group:'kanban',          // allow cross-column drag
-      animation:180,
+      group:{name:'kanban',pull:true,put:true},
+      animation:200,
+      // No handle — entire card is the drag target
+      // Desktop: click and drag immediately
       delay:0,
-      delayOnTouchOnly:true,  // long-press on mobile
-      touchStartThreshold:4,
+      // Mobile: small delay to distinguish from scroll
+      delayOnTouchOnly:true,
+      delay:150,
+      touchStartThreshold:3,
+      fallbackTolerance:5,
       ghostClass:'sortable-ghost',
       chosenClass:'sortable-chosen',
       dragClass:'sortable-drag',
-      handle:'.drag-handle',  // drag by handle or whole card
       filter:'.day-add,.kanban-empty',
       draggable:'.kanban-card',
-      onStart(){_kanbanDragging=true;},
+      // Highlight drop target column
+      onMove(evt){
+        document.querySelectorAll('.kanban-cards').forEach(c=>c.classList.remove('drag-over'));
+        evt.to.classList.add('drag-over');
+        return true;
+      },
+      onStart(evt){
+        _kanbanDragging=true;
+        document.querySelectorAll('.kanban-cards').forEach(c=>c.classList.remove('drag-over'));
+      },
       onEnd(evt){
         _kanbanDragging=false;
+        document.querySelectorAll('.kanban-cards').forEach(c=>c.classList.remove('drag-over'));
         const cardEl=evt.item;
         const taskId=cardEl.dataset.id;
         const newStatus=evt.to.dataset.status;
         const oldStatus=cardEl.dataset.status;
-        if(!taskId||newStatus===oldStatus)return;
+        if(!taskId||!newStatus)return;
+        if(newStatus===oldStatus){
+          // Same column reorder — no status change needed, just refresh counts
+          return;
+        }
         cardEl.dataset.status=newStatus;
+        // Flash animation on the moved card
+        cardEl.classList.add('just-moved');
+        setTimeout(()=>cardEl.classList.remove('just-moved'),700);
         dropKanbanCard(taskId,oldStatus,newStatus);
       },
     });
