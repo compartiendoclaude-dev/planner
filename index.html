@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#0B1120">
 <title>OPS Planner</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -642,6 +642,121 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
 #notif-overlay{position:fixed;inset:0;z-index:499;display:none;}
 #notif-overlay.show{display:block;}
 
+
+/* ══ QUICK DATE BUTTONS ══ */
+.quick-date-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:4px;}
+.quick-date-btn{
+  padding:6px 13px;border-radius:99px;font-size:12px;font-weight:600;
+  border:1.5px solid var(--border-strong);cursor:pointer;
+  background:transparent;color:var(--text-secondary);
+  font-family:'Inter',sans-serif;transition:all .15s;
+}
+.quick-date-btn:hover{background:var(--bg-hover);color:var(--text-primary);border-color:var(--accent);}
+.quick-date-btn.active{background:var(--accent-glow);border-color:rgba(124,58,237,.5);color:var(--accent-light);}
+.quick-date-btn.friday-warn{border-color:var(--s-medium);color:var(--s-medium);}
+.quick-date-btn.friday-warn:hover{background:var(--s-medium-bg);}
+/* Recurrence section card */
+.recurrence-section{
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:14px;
+  display:flex;flex-direction:column;gap:10px;
+}
+.recurrence-section-title{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;}
+/* Day-of-week selector in recurrence */
+.dow-selector{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
+.dow-btn{
+  padding:8px 0;border-radius:6px;border:1px solid var(--border-strong);
+  background:transparent;color:var(--text-secondary);
+  font-size:11px;font-weight:600;cursor:pointer;text-align:center;
+  font-family:'Inter',sans-serif;transition:all .15s;
+}
+.dow-btn.selected{background:var(--accent-glow);border-color:rgba(124,58,237,.5);color:var(--accent-light);}
+.dow-btn.disabled{opacity:.35;cursor:not-allowed;}
+/* Preview strip */
+.date-preview{
+  font-size:11px;color:var(--accent-light);background:var(--accent-glow);
+  border-radius:5px;padding:5px 10px;display:none;line-height:1.5;
+}
+.date-preview.show{display:block;}
+
+
+/* ══ TOUCH DnD FIXES ══ */
+/* Prevent iOS rubber-band scroll from eating touch events */
+#content{-webkit-overflow-scrolling:auto !important;}
+/* During drag: freeze content scroll */
+body.dnd-active{overflow:hidden;}
+body.dnd-active #content{overflow:hidden;pointer-events:none;}
+body.dnd-active .kanban-cards,
+body.dnd-active .day-tasks{pointer-events:all !important;}
+
+/* Drag overlay — makes target columns tappable during drag */
+.dnd-col-overlay{
+  position:absolute;inset:0;z-index:50;
+  display:none;
+}
+body.dnd-active .dnd-col-overlay{display:block;}
+
+/* Touch drag handle — larger tap target on mobile */
+@media(max-width:768px){
+  .kanban-card{padding-bottom:36px;}
+  .kanban-drag-handle{
+    position:absolute;bottom:0;left:0;right:0;height:32px;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(124,58,237,.06);border-top:1px solid rgba(124,58,237,.1);
+    border-radius:0 0 var(--radius-sm) var(--radius-sm);
+    cursor:grab;touch-action:none;
+    gap:4px;
+  }
+  .kanban-drag-handle span{
+    display:block;width:24px;height:3px;border-radius:99px;
+    background:var(--text-muted);opacity:.5;
+  }
+  .task-card{padding-bottom:28px;}
+  .task-drag-handle{
+    position:absolute;bottom:0;left:0;right:0;height:24px;
+    display:flex;align-items:center;justify-content:center;
+    cursor:grab;touch-action:none;gap:3px;
+    background:rgba(0,0,0,.03);border-top:1px solid var(--border);
+    border-radius:0 0 var(--radius-sm) var(--radius-sm);
+  }
+  .task-drag-handle span{
+    display:block;width:18px;height:2px;border-radius:99px;
+    background:var(--text-muted);opacity:.4;
+  }
+  /* Prevent text selection during drag */
+  .kanban-card,.task-card{user-select:none;-webkit-user-select:none;}
+  /* Visual cue during drag */
+  .sortable-chosen{
+    box-shadow:0 16px 48px rgba(124,58,237,.4) !important;
+    transform:scale(1.04) !important;
+    z-index:9999 !important;
+  }
+  .sortable-ghost{
+    opacity:.2 !important;
+    border:2px dashed rgba(124,58,237,.6) !important;
+  }
+  /* Drop zone highlight */
+  .kanban-cards.drag-over{
+    background:rgba(124,58,237,.08) !important;
+    outline:2px dashed rgba(124,58,237,.5) !important;
+  }
+  .day-tasks.drag-over{
+    background:rgba(124,58,237,.08) !important;
+    outline:2px dashed rgba(124,58,237,.4) !important;
+  }
+}
+/* Kanban board: horizontal scroll on mobile for columns */
+@media(max-width:600px){
+  .kanban-board{
+    grid-template-columns:repeat(4,min(72vw,280px));
+    overflow-x:auto;
+    padding-bottom:16px;
+    scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch;
+  }
+  .kanban-col{scroll-snap-align:start;}
+}
+
 </style>
 </head>
 <body>
@@ -1006,7 +1121,7 @@ function getTag(id){return tags.find(t=>t.id===id);}
 function dayName(i){return['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'][i];}
 const SL={pending:'Pendiente',in_progress:'En Progreso',completed:'Completada',blocked:'Bloqueada'};
 const PL={high:'Alta',medium:'Media',low:'Baja'};
-const RL={once:'Una vez',daily:'Todos los días',weekly:'Toda la semana',specific_day:'Día específico',monthly:'Todo el mes'};
+const RL={once:'Una vez',daily:'Lunes a Viernes',weekly:'Toda la semana (Lun–Dom)',specific_day:'Día específico de la semana',monthly:'Fecha específica del calendario'};
 
 // ── SIDEBAR MOBILE ──
 function openSidebar(){document.getElementById('sidebar').classList.add('mobile-open');document.getElementById('sidebar-overlay').classList.add('show');}
@@ -1217,9 +1332,41 @@ function expandTasks(rawTasks,weekStart,weekEnd){
   const out=[];
   for(const t of rawTasks){
     if(!t.recurrence||t.recurrence==='once'){out.push(t);continue;}
-    if(t.recurrence==='daily'){for(let i=0;i<7;i++)out.push({...t,_v:true,specific_date:fmtDate(addDays(weekStart,i)),day_of_week:i});continue;}
-    if(t.recurrence==='weekly'){const dow=t.day_of_week??0;const adj=dow===0?6:dow-1;out.push({...t,_v:true,specific_date:fmtDate(addDays(weekStart,adj))});continue;}
-    if(t.recurrence==='specific_day'){const dow=t.recurrence_day??t.day_of_week??0;const adj=dow===0?6:dow-1;out.push({...t,_v:true,specific_date:fmtDate(addDays(weekStart,adj))});continue;}
+
+    // daily = Lunes a Viernes (Mon=0 .. Fri=4)
+    if(t.recurrence==='daily'){
+      for(let i=0;i<5;i++) // 0=Mon to 4=Fri
+        out.push({...t,_v:true,specific_date:fmtDate(addDays(weekStart,i)),day_of_week:i});
+      continue;
+    }
+
+    // weekly = Toda la semana Lun–Dom
+    if(t.recurrence==='weekly'){
+      for(let i=0;i<7;i++)
+        out.push({...t,_v:true,specific_date:fmtDate(addDays(weekStart,i)),day_of_week:i});
+      continue;
+    }
+
+    // specific_day = same weekday every week
+    if(t.recurrence==='specific_day'){
+      const dow=t.recurrence_day??t.day_of_week??0;
+      out.push({...t,_v:true,specific_date:fmtDate(addDays(weekStart,dow))});
+      continue;
+    }
+
+    // monthly = same calendar date every month
+    if(t.recurrence==='monthly'&&t.specific_date){
+      const orig=new Date(t.specific_date+'T12:00:00');
+      // find the date in current month with same day number
+      const ws=new Date(weekStart);
+      const candidate=new Date(ws.getFullYear(),ws.getMonth(),orig.getDate());
+      const candidateStr=fmtDate(candidate);
+      if(candidateStr>=fmtDate(weekStart)&&candidateStr<=fmtDate(weekEnd)){
+        out.push({...t,_v:true,specific_date:candidateStr});
+      }
+      continue;
+    }
+
     out.push(t);
   }
   return out;
@@ -1339,37 +1486,69 @@ function taskCard(t,dow,dateStr){
     ${t.time_slot?`<div class="task-time">${t.time_slot.slice(0,5)}</div>`:''}
     <div class="task-title">${t.title}${t.recurrence&&t.recurrence!=='once'?' ↻':''}</div>
     <div class="task-meta"><div class="task-avatars">${avs}</div><span class="status-dot ${t.status}"></span></div>
+    <div class="task-drag-handle"><span></span><span></span></div>
   </div>`;
 }
 
 let _weeklyDragging=false;
-function handleWeeklyCardClick(e,id){if(_weeklyDragging)return;editTask(id);}
+let _weeklyTouchStart={x:0,y:0};
+document.addEventListener('touchstart',e=>{
+  if(e.touches[0]){_weeklyTouchStart={x:e.touches[0].clientX,y:e.touches[0].clientY};}
+},{passive:true});
+function handleWeeklyCardClick(e,id){
+  if(_weeklyDragging)return;
+  // On touch: check if finger moved significantly (drag vs tap)
+  if(e.changedTouches&&e.changedTouches[0]){
+    const dx=Math.abs(e.changedTouches[0].clientX-_weeklyTouchStart.x);
+    const dy=Math.abs(e.changedTouches[0].clientY-_weeklyTouchStart.y);
+    if(dx>8||dy>8)return;
+  }
+  // Desktop: check mouse movement
+  const dx2=Math.abs((e.clientX||0)-_kanbanMouseDownPos.x);
+  const dy2=Math.abs((e.clientY||0)-_kanbanMouseDownPos.y);
+  if(dx2>6||dy2>6)return;
+  editTask(id);
+}
 
 function initWeeklyDnD(){
   if(typeof Sortable==='undefined')return;
+  const isMobile=window.matchMedia('(max-width:768px)').matches||('ontouchstart' in window);
   for(let i=0;i<7;i++){
     const el=document.getElementById('wday-'+i);
-    if(!el)return;
+    if(!el)continue;
     Sortable.create(el,{
       group:'weekly',
       animation:150,
-      delay:0,
-      delayOnTouchOnly:true,
-      touchStartThreshold:5,
+      handle: isMobile ? '.task-drag-handle' : undefined,
+      delay: isMobile ? 100 : 0,
+      delayOnTouchOnly: true,
+      touchStartThreshold: 4,
+      fallbackOnBody: true,
+      fallbackTolerance: 3,
       ghostClass:'sortable-ghost',
       chosenClass:'sortable-chosen',
       dragClass:'sortable-drag',
       draggable:'.task-card',
-      filter:'.day-add',
-      onStart(){_weeklyDragging=true;},
+      filter:'.day-add,.task-drag-handle',
+      onStart(evt){
+        _weeklyDragging=true;
+        document.body.classList.add('dnd-active');
+      },
+      onMove(evt){
+        document.querySelectorAll('.day-tasks').forEach(c=>c.classList.remove('drag-over'));
+        if(evt.to)evt.to.classList.add('drag-over');
+        return true;
+      },
       onEnd(evt){
         _weeklyDragging=false;
+        document.body.classList.remove('dnd-active');
+        document.querySelectorAll('.day-tasks').forEach(c=>c.classList.remove('drag-over'));
         const cardEl=evt.item;
         const taskId=cardEl.dataset.id;
-        const newDow=parseInt(evt.to.dataset.dow);
-        const newDate=evt.to.dataset.date;
+        const newDow=parseInt(evt.to?.dataset.dow);
+        const newDate=evt.to?.dataset.date||'';
         const oldDow=parseInt(cardEl.dataset.dow);
-        const oldDate=cardEl.dataset.date;
+        const oldDate=cardEl.dataset.date||'';
         if(!taskId||(newDow===oldDow&&newDate===oldDate))return;
         dropWeeklyCard(taskId,oldDow,oldDate,newDow,newDate,cardEl);
       },
@@ -1534,6 +1713,7 @@ function renderKanban(){
           ${dueLabel?`<span class="kanban-card-date">${dueLabel}</span>`:''}
           ${t.time_slot?`<span class="kanban-card-date">${t.time_slot.slice(0,5)}</span>`:''}
         </div>
+        <div class="kanban-drag-handle" title="Arrastra para mover"><span></span><span></span></div>
       </div>`;
     }).join('');
     return `<div class="kanban-col" data-status="${col.id}">
@@ -1551,7 +1731,7 @@ function renderKanban(){
   document.getElementById('content').innerHTML=`
     <div class="kanban-tip" style="display:flex;align-items:center;gap:8px">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="12" y1="8" x2="12" y2="8"/></svg>
-      Arrastra cualquier tarjeta entre columnas para cambiar su estado. Haz clic para editar.
+      Arrastra las tarjetas entre columnas para cambiar su estado. En móvil usa la barra inferior de cada tarjeta para arrastrar.
     </div>
     <div class="kanban-board" id="kanban-board">${colsHtml}</div>`;
   initKanbanDnD();
@@ -1572,50 +1752,52 @@ function handleKanbanClick(e,id){
 
 function initKanbanDnD(){
   if(typeof Sortable==='undefined')return;
+  const isMobile=window.matchMedia('(max-width:768px)').matches||('ontouchstart' in window);
   const statuses=['pending','in_progress','completed','blocked'];
   statuses.forEach(status=>{
     const el=document.getElementById('kcol-'+status);
     if(!el)return;
     Sortable.create(el,{
       group:{name:'kanban',pull:true,put:true},
-      animation:200,
-      // No handle — entire card is the drag target
-      // Desktop: click and drag immediately
-      delay:0,
-      // Mobile: small delay to distinguish from scroll
-      delayOnTouchOnly:true,
-      delay:150,
-      touchStartThreshold:3,
-      fallbackTolerance:5,
+      animation:180,
+      // MOBILE: use the drag handle so scroll still works normally
+      // DESKTOP: whole card is draggable (handle=false)
+      handle: isMobile ? '.kanban-drag-handle' : undefined,
+      // Touch-specific: short delay only on touch devices
+      delay: isMobile ? 100 : 0,
+      delayOnTouchOnly: true,
+      touchStartThreshold: 4,
+      // Fallback for iOS Safari (uses pointer events internally)
+      fallbackOnBody: true,
+      fallbackTolerance: 3,
+      swapThreshold: 0.65,
       ghostClass:'sortable-ghost',
       chosenClass:'sortable-chosen',
       dragClass:'sortable-drag',
       filter:'.day-add,.kanban-empty',
       draggable:'.kanban-card',
-      // Highlight drop target column
-      onMove(evt){
-        document.querySelectorAll('.kanban-cards').forEach(c=>c.classList.remove('drag-over'));
-        evt.to.classList.add('drag-over');
-        return true;
-      },
+      // Freeze page scroll during drag
       onStart(evt){
         _kanbanDragging=true;
+        document.body.classList.add('dnd-active');
         document.querySelectorAll('.kanban-cards').forEach(c=>c.classList.remove('drag-over'));
+      },
+      onMove(evt){
+        document.querySelectorAll('.kanban-cards').forEach(c=>c.classList.remove('drag-over'));
+        if(evt.to)evt.to.classList.add('drag-over');
+        return true;
       },
       onEnd(evt){
         _kanbanDragging=false;
+        document.body.classList.remove('dnd-active');
         document.querySelectorAll('.kanban-cards').forEach(c=>c.classList.remove('drag-over'));
         const cardEl=evt.item;
         const taskId=cardEl.dataset.id;
-        const newStatus=evt.to.dataset.status;
+        const newStatus=evt.to?.dataset.status;
         const oldStatus=cardEl.dataset.status;
         if(!taskId||!newStatus)return;
-        if(newStatus===oldStatus){
-          // Same column reorder — no status change needed, just refresh counts
-          return;
-        }
+        if(newStatus===oldStatus)return;
         cardEl.dataset.status=newStatus;
-        // Flash animation on the moved card
         cardEl.classList.add('just-moved');
         setTimeout(()=>cardEl.classList.remove('just-moved'),700);
         dropKanbanCard(taskId,oldStatus,newStatus);
@@ -1714,23 +1896,66 @@ function editTask(id){const t=tasks.find(x=>x.id===id);if(!t)return;editingTaskI
 function renderModalBody(t={}){
   const mems=members.map(m=>`<div class="member-check ${_tm.assignedTo.includes(m.id)?'checked':''}" onclick="toggleMember('${m.id}',this)"><div class="member-check-avatar" style="background:${m.avatar_color}22;color:${m.avatar_color}">${initials(m.name)}</div>${m.name.split(' ')[0]}</div>`).join('');
   const tgs=tags.map(g=>`<button type="button" class="tag-btn ${_tm.selectedTags.includes(g.id)?'selected':''}" onclick="toggleTag('${g.id}',this)">${g.name}</button>`).join('');
-  const days=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'].map((d,i)=>`<button type="button" class="day-select-btn ${_tm.dayOfWeek===i?'selected':''}" onclick="selDay(${i},this)">${d}</button>`).join('');
+  const curRec=t.recurrence||'once';
   document.getElementById('modal-body').innerHTML=`
     <div class="form-group"><label class="form-label">Título *</label><input id="f-title" class="form-input" placeholder="Nombre de la tarea" value="${(t.title||'').replace(/"/g,'&quot;')}"></div>
     <div class="form-group"><label class="form-label">Descripción <span>(opcional)</span></label><textarea id="f-desc" class="form-textarea" placeholder="Describe la tarea...">${t.description||''}</textarea></div>
     <div class="form-group"><label class="form-label">Asignado a</label><div class="member-list">${mems||'<span style="color:var(--text-muted);font-size:12px">Sin miembros aún</span>'}</div></div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Fecha específica <span>(opcional)</span></label><input id="f-date" class="form-input" type="date" value="${t.specific_date||''}"></div>
-      <div class="form-group"><label class="form-label">Hora <span>(opcional)</span></label><input id="f-time" class="form-input" type="time" value="${t.time_slot?t.time_slot.slice(0,5):''}"></div>
+
+    <!-- ── FECHA & HORA ── -->
+    <div class="recurrence-section">
+      <div class="recurrence-section-title">📅 Programación</div>
+
+      <!-- Quick date shortcuts -->
+      <div class="form-group">
+        <label class="form-label">Acceso rápido</label>
+        <div class="quick-date-row" id="quick-date-row"></div>
+      </div>
+
+      <!-- Specific calendar date -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Fecha del calendario <span>(día y mes)</span></label>
+          <input id="f-date" class="form-input" type="date" value="${t.specific_date||''}" onchange="onDateChange(this.value)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Hora <span>(opcional)</span></label>
+          <input id="f-time" class="form-input" type="time" value="${t.time_slot?t.time_slot.slice(0,5):''}">
+        </div>
+      </div>
+
+      <!-- Recurrence -->
+      <div class="form-group">
+        <label class="form-label">Repetición</label>
+        <select id="f-recurrence" class="form-select" onchange="onRecurrenceChange(this.value)">
+          ${Object.entries(RL).map(([v,l])=>`<option value="${v}" ${curRec===v?'selected':''}>${l}</option>`).join('')}
+        </select>
+      </div>
+
+      <!-- once: day-of-week in current week -->
+      <div id="rec-once-group" style="${curRec==='once'?'':'display:none'}">
+        <label class="form-label" style="margin-bottom:6px;display:block">O elige un día de esta semana</label>
+        <div class="dow-selector" id="once-dow-btns"></div>
+      </div>
+
+      <!-- specific_day: pick day of week (repeats every week on that day) -->
+      <div id="rec-specific-group" style="${curRec==='specific_day'?'':'display:none'}">
+        <label class="form-label" style="margin-bottom:6px;display:block">¿Qué día se repite cada semana?</label>
+        <div class="dow-selector" id="specific-dow-btns"></div>
+      </div>
+
+      <!-- monthly: uses f-date (calendar date picker already shown above) -->
+      <div id="rec-monthly-group" style="${curRec==='monthly'?'':'display:none'}">
+        <div class="date-preview show" id="monthly-preview">Selecciona la fecha exacta arriba (día y mes).</div>
+      </div>
+
+      <!-- Preview strip -->
+      <div class="date-preview" id="date-preview"></div>
     </div>
-    <div class="form-group"><label class="form-label">Día de la semana</label><div class="day-select-grid">${days}</div></div>
+
     <div class="form-row">
       <div class="form-group"><label class="form-label">Estado</label><select id="f-status" class="form-select">${Object.entries(SL).map(([v,l])=>`<option value="${v}" ${(t.status||'pending')===v?'selected':''}>${l}</option>`).join('')}</select></div>
       <div class="form-group"><label class="form-label">Prioridad</label><select id="f-priority" class="form-select">${Object.entries(PL).map(([v,l])=>`<option value="${v}" ${(t.priority||'medium')===v?'selected':''}>${l}</option>`).join('')}</select></div>
-    </div>
-    <div class="form-group"><label class="form-label">Recurrencia</label><select id="f-recurrence" class="form-select" onchange="toggleRecDay(this.value)">${Object.entries(RL).map(([v,l])=>`<option value="${v}" ${(t.recurrence||'once')===v?'selected':''}>${l}</option>`).join('')}</select></div>
-    <div class="form-group" id="rec-day-group" style="${t.recurrence==='specific_day'?'':'display:none'}"><label class="form-label">Día de recurrencia</label>
-      <div class="day-select-grid" id="rec-day-btns">${['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'].map((d,i)=>`<button type="button" class="day-select-btn ${_tm.recurrenceDay===i?'selected':''}" onclick="selRecDay(${i})">${d}</button>`).join('')}</div>
     </div>
     <div class="form-group"><label class="form-label">Etiquetas</label><div class="tag-list">${tgs||'<span style="color:var(--text-muted);font-size:12px">Sin etiquetas</span>'}</div></div>
     <div class="form-group"><label class="form-label">Notas <span>(opcional)</span></label><textarea id="f-notes" class="form-textarea" placeholder="Notas adicionales...">${t.notes||''}</textarea></div>
@@ -1742,18 +1967,246 @@ function renderModalBody(t={}){
       </div>
       <div id="history-container-${t.id}" class="history-loading">Cargando historial…</div>
     </div>`:''}`;
+
+  buildQuickDates(t);
+  buildOnceDow(t);
+  buildSpecificDow(t);
+  onRecurrenceChange(curRec, true);
   if(t.id) loadTaskHistory(t.id);
 }
 function toggleMember(id,el){if(_tm.assignedTo.includes(id)){_tm.assignedTo=_tm.assignedTo.filter(x=>x!==id);el.classList.remove('checked');}else{_tm.assignedTo.push(id);el.classList.add('checked');}}
 function toggleTag(id,el){if(_tm.selectedTags.includes(id)){_tm.selectedTags=_tm.selectedTags.filter(x=>x!==id);el.classList.remove('selected');}else{_tm.selectedTags.push(id);el.classList.add('selected');}}
-function selDay(i,el){if(_tm.dayOfWeek===i){_tm.dayOfWeek=null;el.classList.remove('selected');}else{_tm.dayOfWeek=i;document.querySelectorAll('.day-select-grid .day-select-btn').forEach((b,idx)=>b.classList.toggle('selected',idx===i));}}
-function selRecDay(i){_tm.recurrenceDay=i;document.querySelectorAll('#rec-day-btns .day-select-btn').forEach((b,idx)=>b.classList.toggle('selected',idx===i));}
-function toggleRecDay(v){document.getElementById('rec-day-group').style.display=v==='specific_day'?'':'none';}
+// ── DATE/RECURRENCE HELPERS ──
+
+function todayStr(){return fmtDate(new Date());}
+function tomorrowStr(){
+  const t=new Date();t.setDate(t.getDate()+1);return fmtDate(t);
+}
+function isFriday(){return new Date().getDay()===5;}
+function nextWeekday(targetDow){ // 0=Mon..6=Sun
+  const today=new Date();today.setHours(0,0,0,0);
+  const curDow=(today.getDay()+6)%7;
+  let diff=targetDow-curDow;
+  if(diff<=0)diff+=7;
+  const d=new Date(today);d.setDate(d.getDate()+diff);
+  return fmtDate(d);
+}
+function weekdayDatesInCurrentWeek(){
+  // Returns Mon–Fri dates of current week
+  const weekStart=getWeekStart(new Date());
+  const dates=[];
+  for(let i=0;i<5;i++){const d=addDays(weekStart,i);dates.push(fmtDate(d));}
+  return dates;
+}
+function allWeekDates(){
+  const weekStart=getWeekStart(new Date());
+  const dates=[];
+  for(let i=0;i<7;i++){const d=addDays(weekStart,i);dates.push(fmtDate(d));}
+  return dates;
+}
+
+// Build quick-date shortcut buttons
+function buildQuickDates(t={}){
+  const today=new Date();today.setHours(0,0,0,0);
+  const todayFmt=fmtDate(today);
+  const tomFmt=tomorrowStr();
+  const isFri=isFriday();
+  const curDate=document.getElementById('f-date')?.value||'';
+
+  const btns=[];
+
+  // HOY
+  btns.push({label:'Hoy',date:todayFmt});
+
+  // MAÑANA — si es viernes, agregar aviso
+  if(isFri){
+    btns.push({label:'Mañana (Sáb)',date:tomFmt,warn:true});
+    // Also offer Monday
+    const mon=nextWeekday(0);
+    btns.push({label:'Lunes',date:mon});
+  } else {
+    btns.push({label:'Mañana',date:tomFmt});
+  }
+
+  // Next working days of current week (not today/tomorrow)
+  const weekStart=getWeekStart(new Date());
+  for(let i=0;i<5;i++){
+    const d=addDays(weekStart,i);
+    const ds=fmtDate(d);
+    if(ds===todayFmt||ds===tomFmt)continue;
+    if(d<today)continue;
+    btns.push({label:['Lun','Mar','Mié','Jue','Vie'][i],date:ds});
+  }
+
+  const row=document.getElementById('quick-date-row');
+  if(!row)return;
+  row.innerHTML=btns.map(b=>`
+    <button type="button"
+      class="quick-date-btn ${curDate===b.date?'active':''} ${b.warn?'friday-warn':''}"
+      onclick="applyQuickDate('${b.date}',this)"
+      title="${b.date}">
+      ${b.label}
+    </button>`).join('');
+}
+
+function applyQuickDate(dateStr,el){
+  const inp=document.getElementById('f-date');
+  if(inp){
+    if(inp.value===dateStr){
+      // Toggle off
+      inp.value='';
+      document.querySelectorAll('.quick-date-btn').forEach(b=>b.classList.remove('active'));
+      _tm.dayOfWeek=null;
+      updateDatePreview();
+    } else {
+      inp.value=dateStr;
+      document.querySelectorAll('.quick-date-btn').forEach(b=>b.classList.remove('active'));
+      el.classList.add('active');
+      // Also update dayOfWeek
+      const d=new Date(dateStr+'T12:00:00');
+      _tm.dayOfWeek=(d.getDay()+6)%7;
+      updateDatePreview();
+    }
+  }
+}
+
+function onDateChange(val){
+  // Clear quick-date active states then re-check
+  document.querySelectorAll('.quick-date-btn').forEach(b=>{
+    b.classList.toggle('active',b.getAttribute('title')===val);
+  });
+  if(val){
+    const d=new Date(val+'T12:00:00');
+    _tm.dayOfWeek=(d.getDay()+6)%7;
+  } else {
+    _tm.dayOfWeek=null;
+  }
+  updateDatePreview();
+}
+
+// Build day-of-week selector for "once" (days of current week)
+function buildOnceDow(t={}){
+  const container=document.getElementById('once-dow-btns');
+  if(!container)return;
+  const today=new Date();today.setHours(0,0,0,0);
+  const weekStart=getWeekStart(today);
+  const labels=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  container.innerHTML=labels.map((lbl,i)=>{
+    const d=addDays(weekStart,i);
+    const dateStr=fmtDate(d);
+    const isPast=d<today;
+    const isSelected=_tm.dayOfWeek===i&&(!document.getElementById('f-date')?.value);
+    return `<button type="button"
+      class="dow-btn ${isSelected?'selected':''} ${isPast?'disabled':''}"
+      onclick="${isPast?'':''}"
+      ${isPast?'disabled':''} 
+      onclick="selOnceDow(${i},'${dateStr}',this)">
+      ${lbl}<br><span style="font-size:9px;opacity:.7">${d.getDate()}</span>
+    </button>`;
+  }).join('');
+}
+
+function selOnceDow(i,dateStr,el){
+  if(el.disabled||el.classList.contains('disabled'))return;
+  const inp=document.getElementById('f-date');
+  const already=_tm.dayOfWeek===i&&inp?.value===dateStr;
+  if(already){
+    _tm.dayOfWeek=null;if(inp)inp.value='';
+    el.classList.remove('selected');
+  } else {
+    _tm.dayOfWeek=i;if(inp)inp.value=dateStr;
+    document.querySelectorAll('#once-dow-btns .dow-btn').forEach(b=>b.classList.remove('selected'));
+    el.classList.add('selected');
+    // Sync quick-date buttons
+    document.querySelectorAll('.quick-date-btn').forEach(b=>b.classList.toggle('active',b.getAttribute('title')===dateStr));
+  }
+  updateDatePreview();
+}
+
+// Build day-of-week selector for "specific_day" recurrence (repeats weekly)
+function buildSpecificDow(t={}){
+  const container=document.getElementById('specific-dow-btns');
+  if(!container)return;
+  const labels=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  container.innerHTML=labels.map((lbl,i)=>`
+    <button type="button" class="dow-btn ${_tm.recurrenceDay===i?'selected':''}"
+      onclick="selSpecificDow(${i},this)">${lbl}</button>`).join('');
+}
+
+function selSpecificDow(i,el){
+  _tm.recurrenceDay=i;
+  document.querySelectorAll('#specific-dow-btns .dow-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  updateDatePreview();
+}
+
+function onRecurrenceChange(val,init=false){
+  // Show/hide sub-groups
+  const groups={
+    'once':     document.getElementById('rec-once-group'),
+    'specific_day': document.getElementById('rec-specific-group'),
+    'monthly':  document.getElementById('rec-monthly-group'),
+  };
+  Object.entries(groups).forEach(([k,el])=>{if(el)el.style.display=val===k?'':'none';});
+
+  // For daily (Lun-Vie) and weekly (Lun-Dom): no extra picker needed
+  updateDatePreview();
+}
+
+function updateDatePreview(){
+  const recEl=document.getElementById('f-recurrence');
+  const rec=recEl?.value||'once';
+  const dateVal=document.getElementById('f-date')?.value||'';
+  const preview=document.getElementById('date-preview');
+  if(!preview)return;
+
+  let msg='';
+  const dayNames=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+
+  if(rec==='once'){
+    if(dateVal){
+      const d=new Date(dateVal+'T12:00:00');
+      msg=`📌 Una vez el ${d.toLocaleDateString('es-SV',{weekday:'long',day:'numeric',month:'long'})}`;
+    } else if(_tm.dayOfWeek!==null){
+      msg=`📌 Una vez este ${dayNames[_tm.dayOfWeek]}`;
+    }
+  } else if(rec==='daily'){
+    const wk=weekdayDatesInCurrentWeek();
+    msg=`🔄 Se repetirá Lunes a Viernes (5 días por semana)`;
+  } else if(rec==='weekly'){
+    msg=`🔄 Se repetirá todos los días de la semana (Lun a Dom)`;
+  } else if(rec==='specific_day'){
+    if(_tm.recurrenceDay!==null){
+      msg=`🔄 Se repetirá cada ${dayNames[_tm.recurrenceDay]}`;
+    } else {
+      msg='Selecciona el día de la semana en que se repite';
+    }
+  } else if(rec==='monthly'){
+    if(dateVal){
+      const d=new Date(dateVal+'T12:00:00');
+      msg=`🔄 Se repetirá el ${d.toLocaleDateString('es-SV',{day:'numeric',month:'long'})} de cada mes`;
+    } else {
+      msg='Selecciona la fecha exacta arriba';
+    }
+  }
+
+  if(msg){preview.textContent=msg;preview.classList.add('show');}
+  else{preview.classList.remove('show');}
+}
+
+// Legacy stubs kept for compatibility
+function selDay(i,el){}
+function selRecDay(i){}
+function toggleRecDay(v){}
 
 async function saveTask(){
   const title=(document.getElementById('f-title').value||'').trim();
   if(!title){toast('El título es requerido','error');return;}
-  const payload={title,description:document.getElementById('f-desc').value.trim()||null,assigned_to:_tm.assignedTo,specific_date:document.getElementById('f-date').value||null,time_slot:document.getElementById('f-time').value||null,day_of_week:_tm.dayOfWeek,status:document.getElementById('f-status').value,priority:document.getElementById('f-priority').value,recurrence:document.getElementById('f-recurrence').value,recurrence_day:_tm.recurrenceDay,tags:_tm.selectedTags,notes:document.getElementById('f-notes').value.trim()||null,updated_at:new Date().toISOString()};
+  const _rec=document.getElementById('f-recurrence').value;
+  // For daily/weekly, day_of_week is not needed (expanded from weekStart)
+  const _dow=(_rec==='daily'||_rec==='weekly')?null:_tm.dayOfWeek;
+  const _recDay=_rec==='specific_day'?_tm.recurrenceDay:null;
+  const payload={title,description:document.getElementById('f-desc').value.trim()||null,assigned_to:_tm.assignedTo,specific_date:document.getElementById('f-date').value||null,time_slot:document.getElementById('f-time').value||null,day_of_week:_dow,status:document.getElementById('f-status').value,priority:document.getElementById('f-priority').value,recurrence:_rec,recurrence_day:_recDay,tags:_tm.selectedTags,notes:document.getElementById('f-notes').value.trim()||null,updated_at:new Date().toISOString()};
 
   if(editingTaskId){
     // Build history entries for changed fields
