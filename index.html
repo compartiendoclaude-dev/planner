@@ -6,96 +6,270 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#0B1120">
+<meta name="theme-color" content="#F0EDFF">
 <title>OPS Planner</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg-base:#0B1120;--bg-surface:#141E32;--bg-card:#1C2A42;--bg-hover:#243352;
-  --accent:#7C3AED;--accent-light:#9D6FEF;--accent-glow:rgba(124,58,237,0.2);
-  --cyan:#06B6D4;--border:rgba(255,255,255,0.08);--border-strong:rgba(255,255,255,0.14);
-  --text-primary:#F0F4FF;--text-secondary:#8B9CBD;--text-muted:#5A6A88;
-  --s-high:#F43F5E;--s-high-bg:rgba(244,63,94,0.15);
-  --s-medium:#F59E0B;--s-medium-bg:rgba(245,158,11,0.15);
-  --s-low:#10B981;--s-low-bg:rgba(16,185,129,0.15);
-  --st-pending:#8B9CBD;--st-progress:#06B6D4;--st-done:#10B981;--st-blocked:#F43F5E;
-  --sidebar-w:224px;--topbar-h:60px;--bottom-nav-h:64px;
-  --radius:10px;--radius-sm:6px;--radius-lg:14px;
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-top: env(safe-area-inset-top, 0px);
+  /* ── Surfaces ── */
+  --bg-base:       #F4F2FF;
+  --bg-surface:    #FFFFFF;
+  --bg-card:       #FDFCFF;
+  --bg-hover:      #EDE9FF;
+  --bg-active:     #E4DEFF;
+  --bg-glass:      rgba(255,255,255,0.85);
+
+  /* ── Violet accent ── */
+  --accent:        #7C5CFC;
+  --accent-2:      #9B7FFF;
+  --accent-light:  #BBA8FF;
+  --accent-dark:   #5B3DD8;
+  --accent-glow:   rgba(124,92,252,0.14);
+  --accent-soft:   rgba(124,92,252,0.07);
+
+  /* ── Pastel palette ── */
+  --mint:          #2DD4A0;   --mint-bg:    rgba(45,212,160,0.10);
+  --sky:           #5BA4F5;   --sky-bg:     rgba(91,164,245,0.10);
+  --rose:          #F472B6;   --rose-bg:    rgba(244,114,182,0.10);
+  --peach:         #FB923C;   --peach-bg:   rgba(251,146,60,0.10);
+  --lilac:         #C084FC;   --lilac-bg:   rgba(192,132,252,0.10);
+  --sage:          #6EE7B7;   --sage-bg:    rgba(110,231,183,0.10);
+
+  /* ── Semantic status ── */
+  --s-high:        #F43F5E;   --s-high-bg:  rgba(244,63,94,0.09);
+  --s-medium:      #F59E0B;   --s-medium-bg:rgba(245,158,11,0.09);
+  --s-low:         #10B981;   --s-low-bg:   rgba(16,185,129,0.09);
+
+  /* ── Task status dots ── */
+  --st-pending:    #94A3B8;
+  --st-progress:   #5BA4F5;
+  --st-done:       #2DD4A0;
+  --st-blocked:    #F43F5E;
+
+  /* ── Borders ── */
+  --border:        rgba(124,92,252,0.09);
+  --border-strong: rgba(124,92,252,0.17);
+  --border-card:   rgba(124,92,252,0.11);
+
+  /* ── Text ── */
+  --text-primary:  #1E1648;
+  --text-secondary:#6B63A8;
+  --text-muted:    #A89FC8;
+
+  /* ── Shadows ── */
+  --shadow-xs: 0 1px 3px rgba(124,92,252,0.07), 0 0 0 1px rgba(124,92,252,0.05);
+  --shadow-sm: 0 2px 8px rgba(124,92,252,0.10), 0 0 0 1px rgba(124,92,252,0.06);
+  --shadow-md: 0 6px 20px rgba(124,92,252,0.13), 0 2px 6px rgba(124,92,252,0.07);
+  --shadow-lg: 0 16px 48px rgba(124,92,252,0.16), 0 4px 12px rgba(124,92,252,0.08);
+  --shadow-btn:0 4px 14px rgba(124,92,252,0.32);
+
+  /* ── Layout ── */
+  --sidebar-w:     232px;
+  --topbar-h:      62px;
+  --bottom-nav-h:  66px;
+  --radius:        12px;
+  --radius-sm:     8px;
+  --radius-lg:     18px;
+  --radius-xl:     24px;
+  --safe-bottom:   env(safe-area-inset-bottom, 0px);
+  --safe-top:      env(safe-area-inset-top, 0px);
 }
+
+/* ── Reset ── */
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;overflow:hidden;}
-body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-primary);display:flex;}
+body{
+  font-family:'Plus Jakarta Sans','DM Sans',system-ui,sans-serif;
+  background:var(--bg-base);
+  color:var(--text-primary);
+  display:flex;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── Smooth spring transitions globally ── */
+button,a,[onclick]{transition:all .2s cubic-bezier(.4,0,.2,1);}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--accent-light);border-radius:99px;opacity:.4;}
+
+/* ── Page fade-in on view change ── */
+@keyframes fadeSlideUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.view-fade{animation:fadeSlideUp .22s cubic-bezier(.4,0,.2,1);}
+
+/* ── Bounce spring for modals ── */
+@keyframes modalSpring{from{opacity:0;transform:translateY(24px) scale(.97);}to{opacity:1;transform:translateY(0) scale(1);}}
+@keyframes toastSlide{from{transform:translateX(60px);opacity:0;}to{transform:translateX(0);opacity:1;}}
 
 /* ══ LOGIN ══ */
 #login-screen{
-  position:fixed;inset:0;z-index:9999;background:var(--bg-base);
+  position:fixed;inset:0;z-index:9999;
   display:flex;align-items:center;justify-content:center;padding:20px;
-  background-image:radial-gradient(ellipse at 20% 50%,rgba(124,58,237,.15) 0%,transparent 60%),
-                   radial-gradient(ellipse at 80% 20%,rgba(6,182,212,.08) 0%,transparent 50%);
+  background:linear-gradient(145deg, #EDE9FF 0%, #F0F7FF 45%, #E8FDF5 100%);
+}
+#login-screen::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 55% 50% at 10% 30%, rgba(192,132,252,.18) 0%, transparent 70%),
+    radial-gradient(ellipse 45% 55% at 88% 15%, rgba(91,164,245,.15) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 65% 85%, rgba(45,212,160,.12) 0%, transparent 70%);
 }
 .login-card{
-  background:var(--bg-surface);border:1px solid var(--border-strong);border-radius:var(--radius-lg);
-  padding:36px 32px;width:100%;max-width:420px;box-shadow:0 32px 80px rgba(0,0,0,.6);
+  position:relative;
+  background:rgba(255,255,255,.90);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border:1px solid rgba(192,132,252,.2);
+  border-radius:var(--radius-xl);
+  padding:40px 36px;width:100%;max-width:420px;
+  box-shadow:0 24px 64px rgba(124,92,252,.13),0 0 0 1px rgba(255,255,255,.7);
 }
-@media(max-width:480px){.login-card{padding:28px 22px;border-radius:16px;}}
+@media(max-width:480px){.login-card{padding:28px 22px;border-radius:20px;}}
 .login-logo{display:flex;align-items:center;gap:12px;margin-bottom:28px;}
-.login-logo-icon{width:44px;height:44px;border-radius:12px;font-size:22px;background:linear-gradient(135deg,var(--accent),var(--cyan));display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.login-logo-text{font-size:19px;font-weight:800;letter-spacing:-.5px;}
-.login-logo-sub{font-size:11px;color:var(--text-muted);}
-.login-title{font-size:21px;font-weight:700;margin-bottom:5px;}
-.login-sub{font-size:13px;color:var(--text-muted);margin-bottom:24px;}
-.login-error{background:var(--s-high-bg);border:1px solid rgba(244,63,94,.3);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--s-high);margin-bottom:14px;display:none;}
-.login-btn{width:100%;padding:13px;border-radius:var(--radius-sm);border:none;background:linear-gradient(135deg,var(--accent),#6D28D9);color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;font-family:'Inter',sans-serif;transition:opacity .15s;}
-.login-btn:active{opacity:.8;}
-.login-btn:disabled{opacity:.5;cursor:not-allowed;}
+.login-logo-icon{
+  width:48px;height:48px;border-radius:15px;
+  background:linear-gradient(135deg,var(--accent),var(--lilac));
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  box-shadow:0 8px 20px rgba(124,92,252,.30);
+}
+.login-logo-text{font-size:20px;font-weight:800;letter-spacing:-.5px;color:var(--text-primary);}
+.login-logo-sub{font-size:11px;color:var(--text-muted);font-weight:500;}
+.login-title{font-size:23px;font-weight:800;margin-bottom:5px;letter-spacing:-.4px;color:var(--text-primary);}
+.login-sub{font-size:13px;color:var(--text-secondary);margin-bottom:24px;line-height:1.55;}
+.login-error{
+  background:var(--rose-bg);border:1px solid rgba(244,63,94,.2);
+  border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;
+  color:var(--s-high);margin-bottom:14px;display:none;font-weight:500;
+}
+.login-btn{
+  width:100%;padding:14px;border-radius:var(--radius-sm);border:none;
+  background:linear-gradient(135deg,var(--accent) 0%,var(--lilac) 100%);
+  color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;
+  font-family:'Plus Jakarta Sans',sans-serif;
+  box-shadow:var(--shadow-btn);
+  letter-spacing:.1px;
+}
+.login-btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(124,92,252,.38);}
+.login-btn:active{transform:translateY(0);opacity:.9;}
+.login-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none;}
 .login-forgot{text-align:center;margin-top:14px;font-size:12px;color:var(--text-muted);}
-.login-forgot a{color:var(--accent-light);cursor:pointer;}
-#reset-screen{position:fixed;inset:0;z-index:9998;background:var(--bg-base);display:none;align-items:center;justify-content:center;padding:20px;}
+.login-forgot a{color:var(--accent);cursor:pointer;font-weight:600;}
+.login-forgot a:hover{text-decoration:underline;}
+#reset-screen{
+  position:fixed;inset:0;z-index:9998;
+  background:linear-gradient(145deg,#EDE9FF 0%,#F0F7FF 100%);
+  display:none;align-items:center;justify-content:center;padding:20px;
+}
 #reset-screen.show{display:flex;}
 
 /* ══ APP SHELL ══ */
 #app{display:none;width:100%;height:100%;}
 #app.show{display:flex;}
 
-/* ══ SIDEBAR — DESKTOP ══ */
+/* ══ SIDEBAR ══ */
 #sidebar{
-  width:var(--sidebar-w);background:var(--bg-surface);border-right:1px solid var(--border);
-  display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:200;
-  transition:transform .25s ease;
+  width:var(--sidebar-w);
+  background:linear-gradient(180deg,#FFFFFF 0%,#FAFAFE 100%);
+  border-right:1px solid var(--border-card);
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;bottom:0;z-index:200;
+  transition:transform .28s cubic-bezier(.4,0,.2,1);
+  box-shadow:2px 0 24px rgba(124,92,252,.05);
 }
-.sidebar-logo{padding:20px 16px 14px;border-bottom:1px solid var(--border);}
-.logo-mark{display:flex;align-items:center;gap:10px;}
-.logo-icon{width:34px;height:34px;border-radius:9px;font-size:16px;background:linear-gradient(135deg,var(--accent),var(--cyan));display:flex;align-items:center;justify-content:center;}
-.logo-text{font-size:14px;font-weight:700;letter-spacing:-.3px;}
-.logo-sub{font-size:10px;color:var(--text-muted);}
-.sidebar-nav{padding:10px 8px;flex:1;overflow-y:auto;}
-.nav-section-label{font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;padding:8px 8px 4px;}
-.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-weight:500;color:var(--text-secondary);transition:all .15s;margin-bottom:2px;user-select:none;}
+.sidebar-logo{
+  padding:22px 18px 16px;
+  border-bottom:1px solid var(--border);
+}
+.logo-mark{display:flex;align-items:center;gap:11px;}
+.logo-icon{
+  width:38px;height:38px;border-radius:12px;
+  background:linear-gradient(135deg,var(--accent),var(--lilac));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 14px rgba(124,92,252,.28);flex-shrink:0;
+}
+.logo-text{font-size:15px;font-weight:800;letter-spacing:-.4px;color:var(--text-primary);}
+.logo-sub{font-size:10px;color:var(--text-muted);font-weight:500;letter-spacing:.2px;}
+
+.sidebar-nav{padding:12px 10px;flex:1;overflow-y:auto;}
+.nav-section-label{
+  font-size:9.5px;font-weight:700;color:var(--text-muted);
+  text-transform:uppercase;letter-spacing:1px;padding:10px 10px 4px;
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:var(--radius-sm);
+  cursor:pointer;font-size:13px;font-weight:500;
+  color:var(--text-secondary);margin-bottom:2px;user-select:none;
+  position:relative;
+}
 .nav-item:hover{background:var(--bg-hover);color:var(--text-primary);}
-.nav-item.active{background:var(--accent-glow);color:var(--accent-light);border:1px solid rgba(124,58,237,.3);}
-.nav-item .icon{width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;} .nav-item .icon svg{stroke:currentColor;}
+.nav-item.active{
+  background:linear-gradient(90deg,rgba(124,92,252,.13),rgba(192,132,252,.07));
+  color:var(--accent);font-weight:700;
+  box-shadow:inset 0 0 0 1px rgba(124,92,252,.18);
+}
+.nav-item.active::before{
+  content:'';position:absolute;left:0;top:20%;bottom:20%;
+  width:3px;background:var(--accent);border-radius:0 2px 2px 0;
+}
+.nav-item .icon{
+  width:20px;height:20px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.nav-item .icon svg{stroke:currentColor;}
+.nav-item.active .icon{opacity:1;}
 .nav-item.admin-only{display:none;}
 .nav-item.admin-only.visible{display:flex;}
-.sidebar-footer{padding:10px 8px;border-top:1px solid var(--border);}
-.sidebar-user{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius-sm);margin-bottom:8px;}
-.sidebar-user-avatar{width:30px;height:30px;border-radius:50%;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.sidebar-user-name{font-size:12px;font-weight:600;line-height:1.3;}
-.sidebar-user-role{font-size:10px;color:var(--text-muted);}
-.sidebar-user-badge{margin-left:auto;font-size:9px;font-weight:700;padding:2px 6px;border-radius:99px;background:rgba(124,58,237,.2);color:var(--accent-light);border:1px solid rgba(124,58,237,.3);}
-.logout-btn{width:100%;padding:8px;border-radius:var(--radius-sm);border:1px solid var(--border-strong);background:transparent;color:var(--text-muted);font-size:12px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px;}
-.logout-btn:hover{background:var(--s-high-bg);color:var(--s-high);border-color:rgba(244,63,94,.3);}
-.week-label{font-size:10px;color:var(--text-muted);text-align:center;margin-bottom:5px;}
-.week-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
-.week-btn{width:26px;height:26px;border-radius:6px;border:1px solid var(--border-strong);background:transparent;color:var(--text-secondary);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
-.week-btn:hover{background:var(--bg-hover);}
-#week-display{font-size:11px;font-weight:600;color:var(--text-primary);}
 
-/* ══ SIDEBAR OVERLAY (mobile) ══ */
-#sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:190;display:none;backdrop-filter:blur(2px);}
+.sidebar-footer{padding:12px 10px;border-top:1px solid var(--border);}
+.sidebar-user{
+  display:flex;align-items:center;gap:9px;
+  padding:9px 10px;border-radius:var(--radius-sm);
+  margin-bottom:8px;background:var(--bg-hover);
+}
+.sidebar-user-avatar{
+  width:32px;height:32px;border-radius:50%;
+  font-size:12px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  box-shadow:0 2px 8px rgba(124,92,252,.15);
+}
+.sidebar-user-name{font-size:12px;font-weight:700;color:var(--text-primary);line-height:1.3;}
+.sidebar-user-role{font-size:10px;color:var(--text-muted);font-weight:500;}
+.sidebar-user-badge{
+  margin-left:auto;font-size:9px;font-weight:700;
+  padding:2px 7px;border-radius:99px;
+  background:var(--accent-glow);color:var(--accent);
+  border:1px solid rgba(124,92,252,.22);white-space:nowrap;
+}
+.logout-btn{
+  width:100%;padding:9px;border-radius:var(--radius-sm);
+  border:1.5px solid var(--border-strong);background:transparent;
+  color:var(--text-muted);font-size:12px;font-weight:600;cursor:pointer;
+  font-family:'Plus Jakarta Sans',sans-serif;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.logout-btn:hover{
+  background:var(--rose-bg);color:var(--rose);
+  border-color:rgba(244,114,182,.3);
+}
+.week-label{font-size:10px;color:var(--text-muted);text-align:center;margin-bottom:5px;font-weight:600;letter-spacing:.3px;}
+.week-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.week-btn{
+  width:28px;height:28px;border-radius:var(--radius-sm);
+  border:1.5px solid var(--border-strong);background:transparent;
+  color:var(--text-secondary);cursor:pointer;font-size:13px;
+  display:flex;align-items:center;justify-content:center;
+}
+.week-btn:hover{background:var(--bg-hover);color:var(--accent);}
+#week-display{font-size:11px;font-weight:700;color:var(--text-primary);}
+
+/* ══ SIDEBAR OVERLAY ══ */
+#sidebar-overlay{
+  position:fixed;inset:0;background:rgba(30,22,72,.35);
+  z-index:190;display:none;backdrop-filter:blur(4px);
+}
 #sidebar-overlay.show{display:block;}
 
 /* ══ MAIN ══ */
@@ -103,26 +277,62 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
 
 /* ══ TOPBAR ══ */
 #topbar{
-  background:var(--bg-surface);border-bottom:1px solid var(--border);
-  padding:0 20px;height:var(--topbar-h);display:flex;align-items:center;gap:12px;
+  background:rgba(255,255,255,.88);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border-card);
+  padding:0 22px;height:var(--topbar-h);
+  display:flex;align-items:center;gap:10px;
   position:sticky;top:0;z-index:50;flex-shrink:0;
+  box-shadow:0 1px 10px rgba(124,92,252,.06);
 }
-.topbar-menu-btn{display:none;width:36px;height:36px;border-radius:8px;border:1px solid var(--border-strong);background:transparent;color:var(--text-secondary);cursor:pointer;font-size:18px;align-items:center;justify-content:center;flex-shrink:0;}
-.topbar-title{font-size:15px;font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.topbar-menu-btn{
+  display:none;width:36px;height:36px;border-radius:var(--radius-sm);
+  border:1.5px solid var(--border-strong);background:transparent;
+  color:var(--text-secondary);cursor:pointer;font-size:18px;
+  align-items:center;justify-content:center;flex-shrink:0;
+}
+.topbar-menu-btn:hover{background:var(--bg-hover);}
+.topbar-title{
+  font-size:16px;font-weight:800;flex:1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  color:var(--text-primary);letter-spacing:-.3px;
+}
 .search-wrap{position:relative;flex-shrink:0;}
-.search-wrap input{background:var(--bg-card);border:1px solid var(--border-strong);border-radius:var(--radius-sm);padding:8px 12px 8px 32px;font-size:13px;color:var(--text-primary);width:200px;outline:none;font-family:'Inter',sans-serif;transition:border .15s;}
-.search-wrap input:focus{border-color:var(--accent);width:240px;}
-.search-wrap::before{content:'🔍';position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:12px;opacity:.5;}
-.btn-new{background:linear-gradient(135deg,var(--accent),#6D28D9);color:#fff;border:none;border-radius:var(--radius-sm);padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;transition:opacity .15s;white-space:nowrap;flex-shrink:0;}
-.btn-new:active{opacity:.8;}
+.search-wrap input{
+  background:var(--bg-hover);border:1.5px solid var(--border-strong);
+  border-radius:var(--radius-sm);padding:8px 12px 8px 33px;
+  font-size:13px;color:var(--text-primary);width:200px;
+  outline:none;font-family:'Plus Jakarta Sans',sans-serif;
+}
+.search-wrap input::placeholder{color:var(--text-muted);}
+.search-wrap input:focus{
+  border-color:var(--accent);width:240px;background:var(--bg-surface);
+  box-shadow:0 0 0 3px rgba(124,92,252,.10);
+}
+.search-wrap::before{
+  content:'';position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  width:14px;height:14px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%237C5CFC' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E") center/contain no-repeat;
+  opacity:.5;
+}
+.btn-new{
+  background:linear-gradient(135deg,var(--accent) 0%,var(--lilac) 100%);
+  color:#fff;border:none;border-radius:var(--radius-sm);
+  padding:9px 16px;font-size:13px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;gap:5px;
+  white-space:nowrap;flex-shrink:0;letter-spacing:.1px;
+  box-shadow:var(--shadow-btn);
+}
+.btn-new:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(124,92,252,.38);}
+.btn-new:active{transform:translateY(0);}
 .btn-new.hidden{display:none!important;}
-.topbar-filter-btn{width:36px;height:36px;border-radius:8px;border:1px solid var(--border-strong);background:transparent;color:var(--text-secondary);cursor:pointer;font-size:16px;display:none;align-items:center;justify-content:center;flex-shrink:0;position:relative;}
+.topbar-filter-btn{width:36px;height:36px;border-radius:var(--radius-sm);border:1.5px solid var(--border-strong);background:transparent;color:var(--text-secondary);cursor:pointer;font-size:16px;display:none;align-items:center;justify-content:center;flex-shrink:0;position:relative;}
 .topbar-filter-btn.has-filters::after{content:'';position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--accent);}
 
 /* ══ FILTER DRAWER ══ */
 #filter-drawer{
   position:fixed;top:0;right:-100%;width:min(340px,100vw);height:100vh;
-  background:var(--bg-surface);border-left:1px solid var(--border-strong);
+  background:var(--bg-surface);border-left:1px solid var(--border-card);box-shadow:-8px 0 32px rgba(124,92,252,.08);
   z-index:300;transition:right .28s ease;overflow-y:auto;
   display:flex;flex-direction:column;
   padding-top:var(--safe-top);
@@ -143,16 +353,16 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
 .fg-chip.active{background:var(--accent-glow);border-color:rgba(124,58,237,.4);color:var(--accent-light);}
 .fg-chip.member-chip{display:flex;align-items:center;gap:6px;}
 .fg-chip-avatar{width:20px;height:20px;border-radius:50%;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;}
-.fg-chip.priority-high.active{background:var(--s-high-bg);border-color:rgba(244,63,94,.4);color:var(--s-high);}
-.fg-chip.priority-medium.active{background:var(--s-medium-bg);border-color:rgba(245,158,11,.4);color:var(--s-medium);}
-.fg-chip.priority-low.active{background:var(--s-low-bg);border-color:rgba(16,185,129,.4);color:var(--s-low);}
+.fg-chip.priority-high.active{background:var(--rose-bg);border-color:rgba(244,63,94,.4);color:var(--s-high);}
+.fg-chip.priority-medium.active{background:var(--peach-bg);border-color:rgba(245,158,11,.4);color:var(--s-medium);}
+.fg-chip.priority-low.active{background:var(--mint-bg);border-color:rgba(16,185,129,.4);color:var(--s-low);}
 .fg-date-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .active-filter-bar{display:flex;flex-wrap:wrap;gap:6px;padding:10px 20px;background:var(--bg-card);border-bottom:1px solid var(--border);}
-.active-filter-pill{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;font-size:11px;font-weight:600;background:var(--accent-glow);border:1px solid rgba(124,58,237,.3);color:var(--accent-light);}
+.active-filter-pill{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;font-size:11px;font-weight:600;background:var(--accent-glow);border:1px solid rgba(124,92,252,.25);color:var(--accent);}
 .active-filter-pill button{background:none;border:none;color:inherit;cursor:pointer;font-size:13px;line-height:1;padding:0 0 0 2px;}
 
 /* ══ CONTENT ══ */
-#content{flex:1;overflow-y:auto;padding:18px 20px;-webkit-overflow-scrolling:touch;}
+#content{flex:1;overflow-y:auto;padding:20px 22px;-webkit-overflow-scrolling:touch;background:var(--bg-base);}
 #content.no-pad{padding:0;}
 
 /* ══ WEEKLY ══ */
@@ -176,26 +386,26 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
 .month-weekday-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);text-align:center;padding:4px 0;}
 .month-nav{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
 .month-nav-title{font-size:16px;font-weight:700;flex:1;text-align:center;text-transform:capitalize;}
-.day-col{background:var(--bg-surface);border-radius:var(--radius);border:1px solid var(--border);min-height:480px;display:flex;flex-direction:column;overflow:hidden;}
-.day-header{padding:10px 10px 8px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:2px;}
-.day-name{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);}
+.day-col{background:var(--bg-surface);border-radius:var(--radius);border:1px solid var(--border-card);box-shadow:var(--shadow-xs);min-height:480px;display:flex;flex-direction:column;overflow:hidden;}
+.day-header{padding:11px 10px 9px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:2px;}
+.day-name{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);}
 .day-number{font-size:18px;font-weight:800;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:50%;}
-.day-col.today .day-number{background:var(--accent);color:#fff;}
-.day-col.today{border-color:rgba(124,58,237,.4);}
+.day-col.today .day-number{background:linear-gradient(135deg,var(--accent),var(--lilac));color:#fff;box-shadow:0 4px 10px rgba(124,92,252,.3);}
+.day-col.today{border-color:rgba(124,92,252,.35);box-shadow:0 0 0 2px rgba(124,92,252,.10),var(--shadow-xs);}
 .day-tasks{padding:6px;flex:1;display:flex;flex-direction:column;gap:5px;overflow-y:auto;}
 .day-add{padding:5px;margin:4px;border-radius:6px;border:1px dashed var(--border-strong);text-align:center;font-size:11px;color:var(--text-muted);cursor:pointer;transition:all .15s;}
-.day-add:hover,.day-add:active{border-color:var(--accent);color:var(--accent-light);background:var(--accent-glow);}
+.day-add:hover,.day-add:active{border-color:var(--accent);color:var(--accent);background:var(--accent-glow);}
 
 /* ══ TASK CARD ══ */
 .task-card{border-radius:7px;padding:8px 9px;cursor:pointer;border-left:3px solid transparent;transition:all .15s;background:var(--bg-card);border:1px solid var(--border);}
 .task-card:active{transform:scale(.98);}
-.task-card.priority-high{border-left-color:var(--s-high);}
-.task-card.priority-medium{border-left-color:var(--s-medium);}
-.task-card.priority-low{border-left-color:var(--s-low);}
+.task-card.priority-high{border-left-color:var(--rose);}
+.task-card.priority-medium{border-left-color:var(--peach);}
+.task-card.priority-low{border-left-color:var(--mint);}
 .task-card.status-completed{opacity:.5;}
 .task-card.status-blocked{border-left-color:var(--st-blocked);}
 .task-title{font-size:11px;font-weight:600;line-height:1.35;margin-bottom:4px;}
-.task-time{font-size:10px;color:var(--cyan);margin-bottom:3px;}
+.task-time{font-size:10px;color:var(--sky);margin-bottom:3px;}
 .task-meta{display:flex;align-items:center;gap:3px;}
 .task-avatars{display:flex;}
 .task-avatar{width:16px;height:16px;border-radius:50%;font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--bg-card);margin-left:-3px;flex-shrink:0;}
@@ -212,67 +422,67 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
 .time-line{width:1px;background:var(--border);position:relative;flex-shrink:0;}
 .time-line::before{content:'';position:absolute;left:-3px;top:12px;width:7px;height:7px;border-radius:50%;background:var(--border-strong);}
 .time-tasks{flex:1;padding:5px 0 5px 14px;display:flex;flex-direction:column;gap:5px;}
-.daily-task-card{background:var(--bg-card);border-radius:8px;padding:10px 12px;border-left:3px solid var(--accent);cursor:pointer;transition:all .15s;border:1px solid var(--border);}
+.daily-task-card{background:var(--bg-surface);border-radius:var(--radius-sm);padding:12px 14px;border-left:3px solid var(--accent);cursor:pointer;border:1px solid var(--border-card);box-shadow:var(--shadow-xs);}
 .daily-task-card:active{transform:scale(.99);}
-.daily-task-card.priority-high{border-left-color:var(--s-high);}
-.daily-task-card.priority-medium{border-left-color:var(--s-medium);}
-.daily-task-card.priority-low{border-left-color:var(--s-low);}
+.daily-task-card.priority-high{border-left-color:var(--rose);}
+.daily-task-card.priority-medium{border-left-color:var(--peach);}
+.daily-task-card.priority-low{border-left-color:var(--mint);}
 .dt-header{display:flex;align-items:center;gap:8px;margin-bottom:3px;}
 .dt-title{font-size:13px;font-weight:600;flex:1;}
-.dt-time{font-size:11px;color:var(--cyan);font-weight:500;}
+.dt-time{font-size:11px;color:var(--sky);font-weight:500;}
 .dt-desc{font-size:12px;color:var(--text-secondary);line-height:1.4;}
 .dt-meta{display:flex;align-items:center;gap:6px;margin-top:6px;flex-wrap:wrap;}
 
 /* ══ LIST ══ */
 .list-table{width:100%;border-collapse:collapse;}
-.list-table th{text-align:left;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap;}
-.list-table td{padding:11px 12px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;}
-.list-table tr:hover td{background:var(--bg-hover);cursor:pointer;}
+.list-table th{text-align:left;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;padding:12px 14px;border-bottom:1px solid var(--border-card);white-space:nowrap;background:var(--bg-base);}
+.list-table td{padding:12px 14px;border-bottom:1px solid var(--border-card);font-size:13px;vertical-align:middle;}
+.list-table tr:hover td{background:var(--bg-hover);cursor:pointer;color:var(--text-primary);}
 .list-row-title{font-weight:600;}
 .list-row-desc{font-size:11px;color:var(--text-secondary);margin-top:2px;}
 
 /* ══ KANBAN ══ */
-.kanban-board{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;align-items:start;}
+.kanban-board{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:start;}
 .kanban-tip{background:var(--accent-glow);border:1px solid rgba(124,58,237,.25);border-radius:var(--radius-sm);padding:10px 14px;font-size:12px;color:var(--accent-light);margin-bottom:14px;line-height:1.5;}
-.kanban-col{background:var(--bg-surface);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;}
-.kanban-col-header{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.kanban-col{background:var(--bg-base);border-radius:var(--radius);border:1px solid var(--border-card);box-shadow:var(--shadow-xs);overflow:hidden;}
+.kanban-col-header{padding:14px 16px 12px;border-bottom:1px solid var(--border);background:var(--bg-surface);display:flex;align-items:center;gap:10px;}
 .kanban-col-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
-.kanban-col-title{font-size:13px;font-weight:700;}
+.kanban-col-title{font-size:13px;font-weight:700;color:var(--text-primary);}
 .kanban-col-hint{font-size:10px;color:var(--text-muted);margin-top:1px;}
 .kanban-col-count{margin-left:auto;font-size:11px;font-weight:600;color:var(--text-muted);background:var(--bg-card);padding:2px 8px;border-radius:99px;flex-shrink:0;}
 .kanban-cards{padding:8px;display:flex;flex-direction:column;gap:7px;min-height:60px;}
-.kanban-card{background:var(--bg-card);border-radius:8px;padding:10px 11px;border:1px solid var(--border);cursor:pointer;transition:all .15s;}
+.kanban-card{background:var(--bg-surface);border-radius:var(--radius-sm);padding:12px 14px;border:1px solid var(--border-card);box-shadow:var(--shadow-xs);cursor:pointer;transition:all .15s;}
 .kanban-card:active{transform:scale(.98);}
 .kanban-card-title{font-size:13px;font-weight:600;margin-bottom:7px;display:flex;align-items:center;gap:7px;line-height:1.4;}
 .kanban-priority-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-.kanban-priority-dot.priority-high{background:var(--s-high);}
-.kanban-priority-dot.priority-medium{background:var(--s-medium);}
-.kanban-priority-dot.priority-low{background:var(--s-low);}
+.kanban-priority-dot.priority-high{background:var(--rose);}
+.kanban-priority-dot.priority-medium{background:var(--peach);}
+.kanban-priority-dot.priority-low{background:var(--mint);}
 .kanban-card-footer{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .kanban-card-date{font-size:10px;color:var(--text-muted);}
 .kanban-empty{text-align:center;padding:16px;font-size:12px;color:var(--text-muted);}
 
 /* ══ BADGES ══ */
 .badge{display:inline-flex;align-items:center;gap:3px;padding:3px 7px;border-radius:99px;font-size:11px;font-weight:600;}
-.badge-priority-high{background:var(--s-high-bg);color:var(--s-high);}
-.badge-priority-medium{background:var(--s-medium-bg);color:var(--s-medium);}
-.badge-priority-low{background:var(--s-low-bg);color:var(--s-low);}
-.badge-status-pending{background:rgba(139,156,189,.15);color:var(--st-pending);}
-.badge-status-in_progress{background:rgba(6,182,212,.15);color:var(--st-progress);}
-.badge-status-completed{background:rgba(16,185,129,.15);color:var(--st-done);}
-.badge-status-blocked{background:rgba(244,63,94,.15);color:var(--st-blocked);}
-.badge-tag{background:rgba(124,58,237,.15);color:var(--accent-light);}
-.badge-admin{background:rgba(124,58,237,.15);color:var(--accent-light);border:1px solid rgba(124,58,237,.3);}
+.badge-priority-high{background:var(--rose-bg);color:#DB2777;}
+.badge-priority-medium{background:var(--peach-bg);color:#C2410C;}
+.badge-priority-low{background:var(--mint-bg);color:#047857;}
+.badge-status-pending{background:rgba(148,163,184,.12);color:#64748B;}
+.badge-status-in_progress{background:var(--sky-bg);color:#1D4ED8;}
+.badge-status-completed{background:var(--mint-bg);color:#047857;}
+.badge-status-blocked{background:var(--rose-bg);color:#BE185D;}
+.badge-tag{background:var(--accent-glow);color:var(--accent);border:1px solid rgba(124,92,252,.18);}
+.badge-admin{background:var(--lilac-bg);color:#7C3AED;border:1px solid rgba(192,132,252,.3);}
 
 /* ══ STATS ══ */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
-.stat-card{background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;}
+.stat-card{background:var(--bg-surface);border:1px solid var(--border-card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow-xs);position:relative;overflow:hidden;}
 .stat-number{font-size:26px;font-weight:800;line-height:1;margin-bottom:3px;}
 .stat-label{font-size:11px;color:var(--text-muted);font-weight:500;}
-.stat-card.s-high .stat-number{color:var(--s-high);}
-.stat-card.s-cyan .stat-number{color:var(--cyan);}
-.stat-card.s-green .stat-number{color:var(--s-low);}
-.stat-card.s-purple .stat-number{color:var(--accent-light);}
+.stat-card.s-high .stat-number{color:var(--rose);}
+.stat-card.s-cyan .stat-number{color:var(--sky);}
+.stat-card.s-green .stat-number{color:var(--mint);}
+.stat-card.s-purple .stat-number{color:var(--accent);}
 
 /* ══ SUMMARY (RESUMEN EJECUTIVO) ══ */
 .summary-intro{background:var(--accent-glow);border:1px solid rgba(124,58,237,.25);border-radius:var(--radius-sm);padding:10px 14px;font-size:12px;color:var(--accent-light);margin-bottom:16px;line-height:1.5;}
@@ -293,7 +503,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
 /* ══ MODALS ══ */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:400;display:flex;align-items:flex-end;justify-content:center;padding:0;backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .2s;}
 .modal-overlay.open{opacity:1;pointer-events:all;}
-.modal{background:var(--bg-surface);border-radius:var(--radius-lg) var(--radius-lg) 0 0;border:1px solid var(--border-strong);width:100%;max-width:700px;max-height:92vh;overflow-y:auto;box-shadow:0 -16px 60px rgba(0,0,0,.5);transform:translateY(30px);transition:transform .25s ease;padding-bottom:var(--safe-bottom);}
+.modal{background:var(--bg-surface);border-radius:var(--radius-xl) var(--radius-xl) 0 0;border:1px solid rgba(124,92,252,.14);width:100%;max-width:700px;max-height:92vh;overflow-y:auto;box-shadow:0 -16px 48px rgba(124,92,252,.12),0 -4px 16px rgba(0,0,0,.06);transform:translateY(30px);transition:transform .25s ease;padding-bottom:var(--safe-bottom);}
 .modal-overlay.open .modal{transform:translateY(0);}
 /* Desktop: centered modal */
 @media(min-width:640px){
@@ -313,15 +523,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .form-label{font-size:12px;font-weight:600;color:var(--text-secondary);}
 .form-label span{color:var(--text-muted);font-weight:400;}
-.form-input,.form-select,.form-textarea{background:var(--bg-card);border:1px solid var(--border-strong);border-radius:var(--radius-sm);padding:10px 12px;font-size:14px;color:var(--text-primary);font-family:'Inter',sans-serif;outline:none;transition:border .15s;width:100%;-webkit-appearance:none;}
-.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);}
+.form-input,.form-select,.form-textarea{background:var(--bg-hover);border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:var(--text-primary);font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:border .15s;width:100%;-webkit-appearance:none;}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);background:var(--bg-surface);box-shadow:0 0 0 3px rgba(124,92,252,.10);}
 .form-textarea{min-height:76px;resize:vertical;}
 .form-select option{background:var(--bg-surface);}
 .form-hint{font-size:11px;color:var(--text-muted);}
 .member-list{display:flex;flex-wrap:wrap;gap:7px;}
 .member-check{display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:99px;border:1px solid var(--border-strong);cursor:pointer;transition:all .15s;font-size:12px;font-weight:500;user-select:none;}
 .member-check input{display:none;}
-.member-check.checked{border-color:var(--accent);background:var(--accent-glow);color:var(--accent-light);}
+.member-check.checked{border-color:var(--accent);background:var(--accent-glow);color:var(--accent);font-weight:600;}
 .member-check:active{transform:scale(.97);}
 .member-check-avatar{width:20px;height:20px;border-radius:50%;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;}
 .tag-list{display:flex;flex-wrap:wrap;gap:6px;}
@@ -332,16 +542,16 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
 .day-select-btn.selected{background:var(--accent-glow);border-color:rgba(124,58,237,.5);color:var(--accent-light);}
 
 /* ══ BUTTONS ══ */
-.btn{padding:10px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:'Inter',sans-serif;}
+.btn{padding:10px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:'Plus Jakarta Sans',sans-serif;}
 .btn:active{transform:scale(.97);}
-.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--lilac));color:#fff;box-shadow:var(--shadow-btn);}
 .btn-primary:disabled{opacity:.5;cursor:not-allowed;}
-.btn-ghost{background:transparent;color:var(--text-secondary);border:1px solid var(--border-strong);}
+.btn-ghost{background:transparent;color:var(--text-secondary);border:1.5px solid var(--border-strong);}
 .btn-ghost:hover{background:var(--bg-hover);}
-.btn-danger{background:rgba(244,63,94,.15);color:var(--s-high);border:1px solid rgba(244,63,94,.3);}
+.btn-danger{background:var(--rose-bg);color:#BE185D;border:1.5px solid rgba(244,114,182,.25);}
 
 /* ══ SETTINGS ══ */
-.settings-section{background:var(--bg-card);border-radius:var(--radius);border:1px solid var(--border);padding:18px;margin-bottom:14px;}
+.settings-section{background:var(--bg-surface);border-radius:var(--radius);border:1px solid var(--border-card);padding:20px;margin-bottom:14px;box-shadow:var(--shadow-xs);}
 .settings-title{font-size:14px;font-weight:700;margin-bottom:12px;}
 .user-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
 .user-row:last-child{border-bottom:none;}
@@ -351,12 +561,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
 .user-row-email{font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .user-row-actions{display:flex;gap:5px;}
 .icon-btn{width:30px;height:30px;border-radius:6px;border:1px solid var(--border-strong);background:transparent;color:var(--text-muted);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
-.icon-btn.danger:active{background:var(--s-high-bg);color:var(--s-high);}
+.icon-btn.danger:active{background:var(--rose-bg);color:var(--s-high);}
 
 /* ══ BOTTOM NAV (mobile) ══ */
 #bottom-nav{
   display:none;position:fixed;bottom:0;left:0;right:0;
-  background:var(--bg-surface);border-top:1px solid var(--border);
+  background:rgba(255,255,255,.93);backdrop-filter:blur(20px);border-top:1px solid var(--border-card);box-shadow:0 -4px 20px rgba(124,92,252,.07);
   height:calc(var(--bottom-nav-h) + var(--safe-bottom));
   padding-bottom:var(--safe-bottom);
   z-index:100;
@@ -364,12 +574,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
 .bottom-nav-inner{display:flex;height:var(--bottom-nav-h);}
 .bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--text-muted);transition:color .15s;padding:6px 0;user-select:none;}
 .bn-item:active{background:rgba(255,255,255,.04);}
-.bn-item.active{color:var(--accent-light);}
+.bn-item.active{color:var(--accent);}
 .bn-item .bn-icon{width:22px;height:22px;display:flex;align-items:center;justify-content:center;} .bn-item .bn-icon svg{stroke:currentColor;}
 .bn-item .bn-label{font-size:10px;font-weight:600;}
 .bn-fab{
   width:52px;height:52px;border-radius:50%;
-  background:linear-gradient(135deg,var(--accent),#6D28D9);
+  background:linear-gradient(135deg,var(--accent),var(--lilac));
   color:#fff;border:none;cursor:pointer;font-size:26px;font-weight:300;
   display:flex;align-items:center;justify-content:center;
   box-shadow:0 4px 20px rgba(124,58,237,.5);
@@ -379,21 +589,21 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
 
 /* ══ TOAST ══ */
 .toast-container{position:fixed;bottom:calc(20px + var(--safe-bottom));right:16px;z-index:9999;display:flex;flex-direction:column;gap:7px;}
-.toast{background:var(--bg-card);border:1px solid var(--border-strong);border-radius:var(--radius);padding:11px 16px;font-size:13px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.4);min-width:220px;animation:slideIn .25s ease;display:flex;align-items:center;gap:8px;}
-.toast.success{border-left:3px solid var(--s-low);}
-.toast.error{border-left:3px solid var(--s-high);}
-.toast.info{border-left:3px solid var(--cyan);}
+.toast{background:var(--bg-surface);border:1px solid var(--border-card);border-radius:var(--radius);padding:12px 16px;font-size:13px;font-weight:600;box-shadow:0 8px 32px rgba(124,92,252,.14),0 2px 8px rgba(0,0,0,.06);min-width:220px;animation:toastSlide .28s cubic-bezier(.34,1.56,.64,1);display:flex;align-items:center;gap:8px;}
+.toast.success{border-left:3px solid var(--mint);}
+.toast.error{border-left:3px solid var(--rose);}
+.toast.info{border-left:3px solid var(--sky);}
 @keyframes slideIn{from{transform:translateX(60px);opacity:0;}to{transform:translateX(0);opacity:1;}}
 
 /* ══ MISC ══ */
 .loading{display:flex;align-items:center;justify-content:center;padding:60px;gap:12px;color:var(--text-muted);}
-.spinner{width:22px;height:22px;border:2px solid var(--border-strong);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+.spinner{width:24px;height:24px;border:2.5px solid var(--border-strong);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .empty-state{text-align:center;padding:50px 20px;color:var(--text-muted);}
 .empty-state .empty-icon{font-size:36px;margin-bottom:10px;opacity:.5;}
 .empty-state p{font-size:14px;margin-bottom:14px;}
-.info-box{background:rgba(6,182,212,.08);border:1px solid rgba(6,182,212,.2);border-radius:8px;padding:11px 14px;font-size:12px;color:var(--cyan);line-height:1.6;}
-.warn-box{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:11px 14px;font-size:12px;color:var(--s-medium);line-height:1.6;}
+.info-box{background:var(--sky-bg);border:1px solid rgba(91,164,245,.22);border-radius:var(--radius-sm);padding:12px 14px;font-size:12px;color:#1D4ED8;line-height:1.6;font-weight:500;}
+.warn-box{background:var(--peach-bg);border:1px solid rgba(251,146,60,.22);border-radius:var(--radius-sm);padding:12px 14px;font-size:12px;color:#C2410C;line-height:1.6;font-weight:500;}
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:99px;}
@@ -463,7 +673,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
 .history-loading{text-align:center;padding:16px;font-size:12px;color:var(--text-muted);}
 
 /* ══ PDF EXPORT ══ */
-.pdf-btn{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--radius-sm);border:1px solid var(--border-strong);background:transparent;color:var(--text-secondary);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;}
+.pdf-btn{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--radius-sm);border:1px solid var(--border-strong);background:transparent;color:var(--text-secondary);font-size:12px;font-weight:600;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s;}
 .pdf-btn:hover{background:var(--bg-hover);color:var(--text-primary);}
 
 @media print {
@@ -557,7 +767,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
   transition:all .15s;flex-shrink:0;
 }
 #notif-btn:hover{background:var(--bg-hover);color:var(--text-primary);}
-#notif-btn.has-unread{color:var(--accent-light);border-color:rgba(124,58,237,.4);}
+#notif-btn.has-unread{color:var(--accent);border-color:rgba(124,92,252,.35);}
 #notif-badge{
   position:absolute;top:-4px;right:-4px;
   min-width:16px;height:16px;border-radius:99px;
@@ -583,7 +793,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
   display:flex;align-items:center;gap:10px;
 }
 .notif-panel-title{font-size:14px;font-weight:700;flex:1;}
-.notif-mark-all{font-size:11px;color:var(--accent-light);cursor:pointer;background:none;border:none;font-family:'Inter',sans-serif;padding:0;}
+.notif-mark-all{font-size:11px;color:var(--accent-light);cursor:pointer;background:none;border:none;font-family:'Plus Jakarta Sans',sans-serif;padding:0;}
 .notif-mark-all:hover{text-decoration:underline;}
 .notif-list{flex:1;overflow-y:auto;}
 .notif-item{
@@ -592,7 +802,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
   transition:background .12s;position:relative;
 }
 .notif-item:hover{background:var(--bg-hover);}
-.notif-item.unread{background:rgba(124,58,237,.06);}
+.notif-item.unread{background:rgba(124,92,252,.05);}
 .notif-item.unread::before{
   content:'';position:absolute;left:0;top:0;bottom:0;
   width:3px;background:var(--accent);border-radius:0 2px 2px 0;
@@ -602,11 +812,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
   display:flex;align-items:center;justify-content:center;
   flex-shrink:0;font-size:14px;
 }
-.notif-icon.due-today{background:var(--s-medium-bg);}
+.notif-icon.due-today{background:var(--peach-bg);}
 .notif-icon.due-tomorrow{background:rgba(6,182,212,.12);}
-.notif-icon.overdue{background:var(--s-high-bg);}
+.notif-icon.overdue{background:var(--rose-bg);}
 .notif-icon.status-changed{background:rgba(16,185,129,.12);}
-.notif-icon.blocked{background:var(--s-high-bg);}
+.notif-icon.blocked{background:var(--rose-bg);}
 .notif-icon.new-task{background:var(--accent-glow);}
 .notif-content{flex:1;min-width:0;}
 .notif-title{font-size:12px;font-weight:600;line-height:1.35;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -649,12 +859,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
   padding:6px 13px;border-radius:99px;font-size:12px;font-weight:600;
   border:1.5px solid var(--border-strong);cursor:pointer;
   background:transparent;color:var(--text-secondary);
-  font-family:'Inter',sans-serif;transition:all .15s;
+  font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s;
 }
 .quick-date-btn:hover{background:var(--bg-hover);color:var(--text-primary);border-color:var(--accent);}
 .quick-date-btn.active{background:var(--accent-glow);border-color:rgba(124,58,237,.5);color:var(--accent-light);}
 .quick-date-btn.friday-warn{border-color:var(--s-medium);color:var(--s-medium);}
-.quick-date-btn.friday-warn:hover{background:var(--s-medium-bg);}
+.quick-date-btn.friday-warn:hover{background:var(--peach-bg);}
 /* Recurrence section card */
 .recurrence-section{
   background:var(--bg-card);border:1px solid var(--border);
@@ -668,7 +878,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg-base);color:var(--text-p
   padding:8px 0;border-radius:6px;border:1px solid var(--border-strong);
   background:transparent;color:var(--text-secondary);
   font-size:11px;font-weight:600;cursor:pointer;text-align:center;
-  font-family:'Inter',sans-serif;transition:all .15s;
+  font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s;
 }
 .dow-btn.selected{background:var(--accent-glow);border-color:rgba(124,58,237,.5);color:var(--accent-light);}
 .dow-btn.disabled{opacity:.35;cursor:not-allowed;}
@@ -1012,8 +1222,8 @@ const supa=supabase.createClient(SUPA_URL,SUPA_KEY);
 
 // ── STATE ──
 let currentView='daily',currentWeekStart=getWeekStart(new Date()),currentDay=new Date(),currentMonth=new Date();
-let tasks=[],members=[],tags=[];
-let editingTaskId=null,editingUserId=null,changePwdUserId=null;
+let tasks=[],members=[],tags=[],taskInstances={}; // taskInstances[taskId_date] = instance row
+let editingTaskId=null,editingInstanceDate=null,editingUserId=null,changePwdUserId=null;
 let currentUser=null,currentMember=null,isAdmin=false;
 let searchQuery='';
 
@@ -1082,7 +1292,16 @@ function showLoginError(m){const e=document.getElementById('login-error');e.text
 function showResetError(m){const e=document.getElementById('reset-error');e.textContent='⚠ '+m;e.style.display='block';}
 function showResetScreen(){document.getElementById('login-screen').style.display='none';document.getElementById('reset-screen').classList.add('show');}
 function showLoginScreen(){document.getElementById('reset-screen').classList.remove('show');document.getElementById('login-screen').style.display='flex';}
-function getAuthError(m){if(m.includes('Invalid login'))return 'Correo o contraseña incorrectos';if(m.includes('User already'))return 'Este correo ya está registrado';if(m.includes('Password should'))return 'Mínimo 6 caracteres';return m;}
+function getAuthError(m){
+  const ml=m.toLowerCase();
+  if(ml.includes('invalid login')||ml.includes('invalid_credentials'))return 'Correo o contraseña incorrectos';
+  if(ml.includes('user already')||ml.includes('already registered'))return 'Este correo ya está registrado';
+  if(ml.includes('password should')||ml.includes('weak_password'))return 'La contraseña debe tener al menos 6 caracteres';
+  if(ml.includes('email rate limit')||ml.includes('rate limit exceeded')||ml.includes('too many'))return '__EMAIL_RATE_LIMIT__';
+  if(ml.includes('signup_disabled'))return 'El registro está deshabilitado en Supabase. Ve a Authentication → Settings y activa el registro.';
+  if(ml.includes('email not confirmed'))return 'El usuario debe confirmar su correo antes de ingresar.';
+  return m;
+}
 function togglePwd(id,btn){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'👁':'🙈';}
 
 function renderSidebarUser(){
@@ -1106,8 +1325,50 @@ async function loadData(){
     supa.from('planner_tags').select('*').order('name'),
   ]);
   tasks=t.data||[];members=m.data||[];tags=g.data||[];
+  await refreshInstances();
 }
-async function refreshTasks(){const{data}=await supa.from('planner_tasks').select('*').order('created_at',{ascending:false});tasks=data||[];}
+async function refreshTasks(){
+  const{data}=await supa.from('planner_tasks').select('*').order('created_at',{ascending:false});
+  tasks=data||[];
+  await refreshInstances();
+}
+async function refreshInstances(){
+  // Load instances for a 3-month window around today
+  const from=fmtDate(addDays(new Date(),-45));
+  const to=fmtDate(addDays(new Date(),90));
+  const{data}=await supa.from('planner_task_instances')
+    .select('*')
+    .gte('instance_date',from)
+    .lte('instance_date',to);
+  taskInstances={};
+  (data||[]).forEach(inst=>{
+    taskInstances[inst.task_id+'_'+inst.instance_date]=inst;
+  });
+}
+// Get effective status for a task on a specific date
+function getInstanceStatus(task, dateStr){
+  if(!task.recurrence||task.recurrence==='once') return task.status;
+  const key=task.id+'_'+dateStr;
+  return taskInstances[key]?.status||'pending';
+}
+// Upsert an instance status
+async function setInstanceStatus(taskId, dateStr, newStatus){
+  const key=taskId+'_'+dateStr;
+  const existing=taskInstances[key];
+  if(existing){
+    const{error}=await supa.from('planner_task_instances')
+      .update({status:newStatus,updated_at:new Date().toISOString()})
+      .eq('id',existing.id);
+    if(!error) taskInstances[key]={...existing,status:newStatus};
+    return error;
+  } else {
+    const{data,error}=await supa.from('planner_task_instances')
+      .insert({task_id:taskId,instance_date:dateStr,status:newStatus})
+      .select().single();
+    if(!error&&data) taskInstances[key]=data;
+    return error;
+  }
+}
 async function refreshMembers(){const{data}=await supa.from('planner_members').select('*').order('name');members=data||[];}
 
 // ── UTILS ──
@@ -1474,18 +1735,21 @@ function renderWeekly(){
       <div class="day-add" onclick="openNewTaskDay(${i},'${dateStr}')">＋</div>
     </div>`;
   }
-  document.getElementById('content').innerHTML=`${renderStats(filtered)}<div class="weekly-grid">${cols}</div>`;
+  const wc=document.getElementById('content');wc.innerHTML=`${renderStats(filtered)}<div class="weekly-grid">${cols}</div>`;wc.classList.remove('view-fade');void wc.offsetWidth;wc.classList.add('view-fade');
   initWeeklyDnD();
 }
 
 function taskCard(t,dow,dateStr){
   const avs=(t.assigned_to||[]).slice(0,3).map(id=>{const m=getMember(id);return m?`<div class="task-avatar" style="background:${m.avatar_color}22;color:${m.avatar_color}">${initials(m.name)}</div>`:''}).join('');
-  return `<div class="task-card priority-${t.priority} status-${t.status}"
+  // For recurring tasks, use instance status for this specific date
+  const isRecurring=t.recurrence&&t.recurrence!=='once';
+  const displayStatus=isRecurring&&dateStr?getInstanceStatus(t,dateStr):t.status;
+  return `<div class="task-card priority-${t.priority} status-${displayStatus}"
     data-id="${t.id}" data-dow="${dow}" data-date="${dateStr||''}"
-    onclick="handleWeeklyCardClick(event,'${t.id}')">
+    onclick="handleWeeklyCardClick(event,'${t.id}','${dateStr||''}')">
     ${t.time_slot?`<div class="task-time">${t.time_slot.slice(0,5)}</div>`:''}
-    <div class="task-title">${t.title}${t.recurrence&&t.recurrence!=='once'?' ↻':''}</div>
-    <div class="task-meta"><div class="task-avatars">${avs}</div><span class="status-dot ${t.status}"></span></div>
+    <div class="task-title">${t.title}${isRecurring?` <span style="font-size:9px;opacity:.6">↻</span>`:''}</div>
+    <div class="task-meta"><div class="task-avatars">${avs}</div><span class="status-dot ${displayStatus}"></span></div>
     <div class="task-drag-handle"><span></span><span></span></div>
   </div>`;
 }
@@ -1495,19 +1759,17 @@ let _weeklyTouchStart={x:0,y:0};
 document.addEventListener('touchstart',e=>{
   if(e.touches[0]){_weeklyTouchStart={x:e.touches[0].clientX,y:e.touches[0].clientY};}
 },{passive:true});
-function handleWeeklyCardClick(e,id){
+function handleWeeklyCardClick(e,id,dateStr){
   if(_weeklyDragging)return;
-  // On touch: check if finger moved significantly (drag vs tap)
   if(e.changedTouches&&e.changedTouches[0]){
     const dx=Math.abs(e.changedTouches[0].clientX-_weeklyTouchStart.x);
     const dy=Math.abs(e.changedTouches[0].clientY-_weeklyTouchStart.y);
     if(dx>8||dy>8)return;
   }
-  // Desktop: check mouse movement
   const dx2=Math.abs((e.clientX||0)-_kanbanMouseDownPos.x);
   const dy2=Math.abs((e.clientY||0)-_kanbanMouseDownPos.y);
   if(dx2>6||dy2>6)return;
-  editTask(id);
+  editTask(id,dateStr);
 }
 
 function initWeeklyDnD(){
@@ -1702,10 +1964,14 @@ function renderKanban(){
     const cards=ct.map(t=>{
       const avs=(t.assigned_to||[]).slice(0,3).map(id=>{const m=getMember(id);return m?`<div class="task-avatar" style="background:${m.avatar_color}22;color:${m.avatar_color}">${initials(m.name)}</div>`:''}).join('');
       const dueLabel=t.specific_date?fmt(t.specific_date+'T12:00:00',{day:'numeric',month:'short'}):(t.day_of_week!=null?dayName(t.day_of_week):'');
-      return `<div class="kanban-card" data-id="${t.id}" data-status="${t.status}" onclick="handleKanbanClick(event,'${t.id}')">
+      const isRecurring=t.recurrence&&t.recurrence!=='once';
+      const todayStr2=fmtDate(new Date());
+      const kStatus=isRecurring?getInstanceStatus(t,todayStr2):t.status;
+      const kInstanceDate=isRecurring?todayStr2:null;
+      return `<div class="kanban-card" data-id="${t.id}" data-status="${kStatus}" data-instance-date="${kInstanceDate||''}" onclick="handleKanbanClick(event,'${t.id}','${kInstanceDate||''}')">
         <div class="kanban-card-title">
           <span class="kanban-priority-dot priority-${t.priority}" title="${PL[t.priority]}"></span>
-          ${t.title}
+          ${t.title}${isRecurring?` <span style="font-size:9px;opacity:.5">↻</span>`:''}
         </div>
         ${t.description?`<div class="kanban-card-desc">${t.description.slice(0,60)}${t.description.length>60?'…':''}</div>`:''}
         <div class="kanban-card-footer">
@@ -1741,13 +2007,12 @@ function renderKanban(){
 let _kanbanDragging=false;
 let _kanbanMouseDownPos={x:0,y:0};
 document.addEventListener('mousedown',e=>{_kanbanMouseDownPos={x:e.clientX,y:e.clientY};});
-function handleKanbanClick(e,id){
+function handleKanbanClick(e,id,instanceDate){
   if(_kanbanDragging)return;
-  // If mouse moved more than 6px between mousedown and click, it was a drag
   const dx=Math.abs(e.clientX-_kanbanMouseDownPos.x);
   const dy=Math.abs(e.clientY-_kanbanMouseDownPos.y);
   if(dx>6||dy>6)return;
-  editTask(id);
+  editTask(id,instanceDate||null);
 }
 
 function initKanbanDnD(){
@@ -1806,35 +2071,39 @@ function initKanbanDnD(){
   });
 }
 
-async function dropKanbanCard(taskId,oldStatus,newStatus){
-  // Optimistically update local state
+async function dropKanbanCard(taskId,oldStatus,newStatus,instanceDate){
   const t=tasks.find(x=>x.id===taskId);
-  if(t){t.status=newStatus;}
-  // Update counts
+  const isRecurring=t?.recurrence&&t.recurrence!=='once';
+  const instDate=instanceDate||fmtDate(new Date());
+
+  // Optimistic UI update
+  if(!isRecurring&&t){t.status=newStatus;}
+  else if(isRecurring){taskInstances[taskId+'_'+instDate]={...(taskInstances[taskId+'_'+instDate]||{}),status:newStatus};}
+
   ['pending','in_progress','completed','blocked'].forEach(s=>{
     const el=document.getElementById('kcount-'+s);
-    if(el){
-      const count=document.querySelectorAll(`#kcol-${s} .kanban-card`).length;
-      el.textContent=count;
-    }
+    if(el){const count=document.querySelectorAll(`#kcol-${s} .kanban-card`).length;el.textContent=count;}
     const empty=document.getElementById('kempty-'+s);
-    if(empty){
-      const hasCards=document.querySelectorAll(`#kcol-${s} .kanban-card`).length>0;
-      empty.style.display=hasCards?'none':'block';
-    }
+    if(empty){empty.style.display=document.querySelectorAll(`#kcol-${s} .kanban-card`).length>0?'none':'block';}
   });
-  // Persist to Supabase
-  const{error}=await supa.from('planner_tasks').update({status:newStatus,updated_at:new Date().toISOString()}).eq('id',taskId);
+
+  let error;
+  if(isRecurring){
+    // Recurring: write to instance table only
+    error=await setInstanceStatus(taskId,instDate,newStatus);
+  }else{
+    // Non-recurring: update master
+    const res=await supa.from('planner_tasks').update({status:newStatus,updated_at:new Date().toISOString()}).eq('id',taskId);
+    error=res.error;
+  }
+
   if(error){
     toast('Error al guardar: '+error.message,'error');
-    // Revert local state on error
-    if(t)t.status=oldStatus;
-    renderKanban();
-    return;
+    if(!isRecurring&&t)t.status=oldStatus;
+    renderKanban();return;
   }
   await insertHistory(taskId,'status_changed','status',oldStatus,newStatus);
   toast(`Movida a "${SL[newStatus]}" ✓`,'success');
-  // Sync tasks array
   await refreshTasks();
 }
 
@@ -1891,7 +2160,23 @@ let _tm={assignedTo:[],selectedTags:[],dayOfWeek:null,recurrenceDay:null};
 function openNewTask(def={}){editingTaskId=null;_tm={assignedTo:[],selectedTags:[],dayOfWeek:def.day_of_week??null,recurrenceDay:null};document.getElementById('modal-title').textContent='Nueva Tarea';document.getElementById('btn-delete').style.display='none';renderModalBody(def);document.getElementById('task-modal').classList.add('open');}
 function openNewTaskDay(dow,date){openNewTask({day_of_week:dow,specific_date:date});}
 function openNewTaskStatus(s){openNewTask({status:s});}
-function editTask(id){const t=tasks.find(x=>x.id===id);if(!t)return;editingTaskId=id;_tm={assignedTo:[...(t.assigned_to||[])],selectedTags:[...(t.tags||[])],dayOfWeek:t.day_of_week,recurrenceDay:t.recurrence_day};document.getElementById('modal-title').textContent='Editar Tarea';document.getElementById('btn-delete').style.display='block';renderModalBody(t);document.getElementById('task-modal').classList.add('open');}
+function editTask(id,instanceDate){
+  const t=tasks.find(x=>x.id===id);if(!t)return;
+  editingTaskId=id;
+  editingInstanceDate=instanceDate||null; // track which date this recurring task is being edited for
+  _tm={assignedTo:[...(t.assigned_to||[])],selectedTags:[...(t.tags||[])],dayOfWeek:t.day_of_week,recurrenceDay:t.recurrence_day};
+  const isRecurring=t.recurrence&&t.recurrence!=='once';
+  // For recurring tasks, show the instance status for this date
+  const tForModal=isRecurring&&instanceDate
+    ? {...t, status: getInstanceStatus(t,instanceDate), _instanceDate: instanceDate}
+    : t;
+  document.getElementById('modal-title').textContent=isRecurring&&instanceDate
+    ? `Editar — ${fmt(instanceDate+'T12:00:00',{weekday:'short',day:'numeric',month:'short'})}`
+    : 'Editar Tarea';
+  document.getElementById('btn-delete').style.display='block';
+  renderModalBody(tForModal);
+  document.getElementById('task-modal').classList.add('open');
+}
 
 function renderModalBody(t={}){
   const mems=members.map(m=>`<div class="member-check ${_tm.assignedTo.includes(m.id)?'checked':''}" onclick="toggleMember('${m.id}',this)"><div class="member-check-avatar" style="background:${m.avatar_color}22;color:${m.avatar_color}">${initials(m.name)}</div>${m.name.split(' ')[0]}</div>`).join('');
@@ -1959,6 +2244,12 @@ function renderModalBody(t={}){
     </div>
     <div class="form-group"><label class="form-label">Etiquetas</label><div class="tag-list">${tgs||'<span style="color:var(--text-muted);font-size:12px">Sin etiquetas</span>'}</div></div>
     <div class="form-group"><label class="form-label">Notas <span>(opcional)</span></label><textarea id="f-notes" class="form-textarea" placeholder="Notas adicionales...">${t.notes||''}</textarea></div>
+    ${t._instanceDate?`
+    <div style="background:var(--accent-glow);border:1px solid rgba(124,58,237,.2);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--accent-light);display:flex;gap:8px;align-items:center">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Estás editando la ocurrencia del <strong>${fmt(t._instanceDate+'T12:00:00',{weekday:'long',day:'numeric',month:'long'})}</strong>.
+      El estado que elijas aplica solo a este día. Los demás días mantienen su estado independiente.
+    </div>`:''}
     ${t.created_at?`<div style="font-size:11px;color:var(--text-muted)">Creado: ${new Date(t.created_at).toLocaleString('es-SV')}</div>`:''}
     ${t.id?`<div style="border-top:1px solid var(--border);margin-top:4px;padding-top:12px">
       <div style="font-size:12px;font-weight:700;color:var(--text-secondary);margin-bottom:10px;display:flex;align-items:center;gap:6px;">
@@ -2203,35 +2494,62 @@ async function saveTask(){
   const title=(document.getElementById('f-title').value||'').trim();
   if(!title){toast('El título es requerido','error');return;}
   const _rec=document.getElementById('f-recurrence').value;
-  // For daily/weekly, day_of_week is not needed (expanded from weekStart)
   const _dow=(_rec==='daily'||_rec==='weekly')?null:_tm.dayOfWeek;
   const _recDay=_rec==='specific_day'?_tm.recurrenceDay:null;
-  const payload={title,description:document.getElementById('f-desc').value.trim()||null,assigned_to:_tm.assignedTo,specific_date:document.getElementById('f-date').value||null,time_slot:document.getElementById('f-time').value||null,day_of_week:_dow,status:document.getElementById('f-status').value,priority:document.getElementById('f-priority').value,recurrence:_rec,recurrence_day:_recDay,tags:_tm.selectedTags,notes:document.getElementById('f-notes').value.trim()||null,updated_at:new Date().toISOString()};
+  const newStatus=document.getElementById('f-status').value;
+  const payload={title,description:document.getElementById('f-desc').value.trim()||null,assigned_to:_tm.assignedTo,specific_date:document.getElementById('f-date').value||null,time_slot:document.getElementById('f-time').value||null,day_of_week:_dow,status:newStatus,priority:document.getElementById('f-priority').value,recurrence:_rec,recurrence_day:_recDay,tags:_tm.selectedTags,notes:document.getElementById('f-notes').value.trim()||null,updated_at:new Date().toISOString()};
 
   if(editingTaskId){
-    // Build history entries for changed fields
     const oldTask=tasks.find(x=>x.id===editingTaskId);
-    const trackFields=['title','description','status','priority','time_slot','specific_date','notes','recurrence'];
-    const historyPromises=[];
-    if(oldTask){
-      for(const f of trackFields){
-        const oldVal=oldTask[f]??null;
-        const newVal=payload[f]??null;
-        const oldStr=oldVal!=null?String(oldVal):'';
-        const newStr=newVal!=null?String(newVal):'';
-        if(oldStr!==newStr){
-          const action=f==='status'?'status_changed':'updated';
-          historyPromises.push(insertHistory(editingTaskId,action,f,oldStr||null,newStr||null));
+    const isRecurring=oldTask?.recurrence&&oldTask.recurrence!=='once';
+
+    // ── RECURRING TASK: status change goes to instance, rest to master ──
+    if(isRecurring&&editingInstanceDate){
+      const oldInstanceStatus=getInstanceStatus(oldTask,editingInstanceDate);
+      const masterPayload={...payload};
+      delete masterPayload.status; // don't touch master status
+      // Update master task (title, desc, priority, etc.)
+      const res=await supa.from('planner_tasks').update(masterPayload).eq('id',editingTaskId);
+      if(res.error){toast('Error: '+res.error.message,'error');return;}
+      // Update instance status for this specific date
+      if(newStatus!==oldInstanceStatus){
+        const err=await setInstanceStatus(editingTaskId,editingInstanceDate,newStatus);
+        if(err){toast('Error al actualizar instancia: '+err.message,'error');return;}
+        await insertHistory(editingTaskId,'status_changed','status',oldInstanceStatus,newStatus);
+      }
+      // Track other field changes
+      const trackFields=['title','description','priority','time_slot','notes'];
+      const histPs=[];
+      if(oldTask){
+        for(const f of trackFields){
+          const o=String(oldTask[f]??''),n=String(payload[f]??'');
+          if(o!==n)histPs.push(insertHistory(editingTaskId,'updated',f,o||null,n||null));
         }
       }
-      // Check assigned_to changes
-      const oldAssigned=JSON.stringify((oldTask.assigned_to||[]).sort());
-      const newAssigned=JSON.stringify((_tm.assignedTo||[]).sort());
-      if(oldAssigned!==newAssigned)historyPromises.push(insertHistory(editingTaskId,'assigned','assigned_to',oldAssigned,newAssigned));
+      await Promise.all(histPs);
+      toast('Tarea actualizada ✓','success');
+      closeModal('task-modal');await refreshTasks();checkNotifications();renderView();
+      return;
+    }
+
+    // ── NON-RECURRING: update master as before ──
+    const trackFields=['title','description','status','priority','time_slot','specific_date','notes','recurrence'];
+    const histPs=[];
+    if(oldTask){
+      for(const f of trackFields){
+        const o=String(oldTask[f]??''),n=String(payload[f]??'');
+        if(o!==n){
+          const action=f==='status'?'status_changed':'updated';
+          histPs.push(insertHistory(editingTaskId,action,f,o||null,n||null));
+        }
+      }
+      const oa=JSON.stringify((oldTask.assigned_to||[]).sort());
+      const na=JSON.stringify((_tm.assignedTo||[]).sort());
+      if(oa!==na)histPs.push(insertHistory(editingTaskId,'assigned','assigned_to',oa,na));
     }
     const res=await supa.from('planner_tasks').update(payload).eq('id',editingTaskId);
     if(res.error){toast('Error: '+res.error.message,'error');return;}
-    await Promise.all(historyPromises);
+    await Promise.all(histPs);
   }else{
     const res=await supa.from('planner_tasks').insert(payload).select().single();
     if(res.error){toast('Error: '+res.error.message,'error');return;}
@@ -2256,7 +2574,11 @@ function openNewUser(){
   const colors=['#7C3AED','#06B6D4','#F59E0B','#10B981','#EC4899','#F43F5E'];
   const c=colors[members.length%colors.length];
   document.getElementById('user-modal-body').innerHTML=`
-    <div class="info-box">Se creará cuenta en Supabase Auth y se agregará como miembro del equipo.</div>
+    <div class="info-box">
+      Se creará cuenta en Supabase Auth y se agregará como miembro del equipo.<br>
+      <strong>⚠ Si ves "email rate limit":</strong> ve a <em>Supabase → Authentication → Settings</em>
+      y desactiva <strong>"Enable email confirmations"</strong>. Así no hay límite.
+    </div>
     <div class="form-row" style="margin-top:4px">
       <div class="form-group"><label class="form-label">Nombre *</label><input id="u-name" class="form-input" placeholder="Ana García"></div>
       <div class="form-group"><label class="form-label">Rol</label><input id="u-role" class="form-input" placeholder="Técnico, Analista…"></div>
@@ -2309,12 +2631,69 @@ async function saveUser(){
     const pwd=document.getElementById('u-pwd')?.value||'';
     if(!email||!pwd){toast('Correo y contraseña requeridos','error');btn.disabled=false;btn.textContent='Crear';return;}
     if(pwd.length<6){toast('Mínimo 6 caracteres','error');btn.disabled=false;btn.textContent='Crear';return;}
-    const{data:sd,error:se}=await supa.auth.signUp({email,password:pwd});
-    if(se){btn.disabled=false;btn.textContent='Crear';toast('Error Auth: '+getAuthError(se.message),'error');return;}
-    const{error:me}=await supa.from('planner_members').insert({name,role:role||null,role_type:rt,avatar_color:color,email,auth_user_id:sd.user?.id||null});
+    if(members.length>=10){toast('Límite de 10 usuarios alcanzado','error');btn.disabled=false;btn.textContent='Crear';return;}
+    if(members.some(m=>(m.email||'').toLowerCase()===email.toLowerCase())){
+      toast('Ya existe un miembro con ese correo','error');btn.disabled=false;btn.textContent='Crear';return;
+    }
+
+    // Attempt signup — disable email confirmation side effects by using a dummy redirect
+    const{data:sd,error:se}=await supa.auth.signUp({
+      email,password:pwd,
+      options:{emailRedirectTo:window.location.href,data:{full_name:name}}
+    });
+
+    if(se){
+      btn.disabled=false;btn.textContent='Crear';
+      const errMsg=getAuthError(se.message);
+
+      if(errMsg==='__EMAIL_RATE_LIMIT__'){
+        // Rate limit hit — offer to create member record only (no Auth account yet)
+        const doMemberOnly=confirm(
+          'Supabase ha limitado la creación de cuentas por hora (máx. 4/hora en plan gratuito).\n\n' +
+          '¿Deseas agregar a "'+name+'" como miembro del equipo ahora y crear su cuenta Auth después?\n\n' +
+          '(Podrá iniciar sesión una vez que desactives "Enable email confirmations" en Supabase → Authentication → Settings y crees su cuenta)'
+        );
+        if(doMemberOnly){
+          const{error:me}=await supa.from('planner_members').insert({
+            name,role:role||null,role_type:rt,avatar_color:color,email,auth_user_id:null
+          });
+          if(me){toast('Error al agregar miembro: '+me.message,'error');return;}
+          toast(`"${name}" agregado como miembro. Crea su cuenta Auth cuando se levante el límite.`,'info');
+          closeModal('user-modal');await refreshMembers();renderUsers();
+        }
+        return;
+      }
+
+      if(se.message.toLowerCase().includes('already registered')||se.message.toLowerCase().includes('already been registered')){
+        // User exists in Auth — just insert into planner_members
+        const{error:me}=await supa.from('planner_members').insert({
+          name,role:role||null,role_type:rt,avatar_color:color,email,auth_user_id:null
+        });
+        if(me){toast('La cuenta Auth ya existe. Error al agregar miembro: '+me.message,'error');return;}
+        toast(`"${name}" vinculado como miembro (cuenta Auth ya existía) ✓`,'success');
+        closeModal('user-modal');await refreshMembers();renderUsers();
+        return;
+      }
+
+      toast('Error al crear cuenta: '+errMsg,'error');
+      return;
+    }
+
+    // Auth signup OK — insert into planner_members
+    const authUserId=sd?.user?.id||null;
+    const{error:me}=await supa.from('planner_members').insert({
+      name,role:role||null,role_type:rt,avatar_color:color,email,auth_user_id:authUserId
+    });
     btn.disabled=false;btn.textContent='Crear';
-    if(me){toast('Auth OK, error en miembro: '+me.message,'error');return;}
-    toast(`"${name}" creado ✓`,'success');closeModal('user-modal');await refreshMembers();renderUsers();
+    if(me){toast('Cuenta Auth creada, error en miembro: '+me.message,'error');return;}
+
+    const needsConfirm=!sd?.session&&!sd?.user?.email_confirmed_at;
+    if(needsConfirm){
+      toast(`"${name}" creado. Debe confirmar su correo para poder ingresar. (O desactiva "Email confirmations" en Supabase → Auth → Settings)`,'info');
+    }else{
+      toast(`"${name}" creado ✓`,'success');
+    }
+    closeModal('user-modal');await refreshMembers();renderUsers();
   }
 }
 async function deleteUser(id,name){
@@ -2358,8 +2737,18 @@ async function deleteTag(id,name){
 
 // ── UI HELPERS ──
 function renderStats(list){
-  const t=list.length,ip=list.filter(x=>x.status==='in_progress').length,d=list.filter(x=>x.status==='completed').length,b=list.filter(x=>x.status==='blocked').length;
-  return `<div class="stats-row"><div class="stat-card s-purple"><div class="stat-number">${t}</div><div class="stat-label">Total</div></div><div class="stat-card s-cyan"><div class="stat-number">${ip}</div><div class="stat-label">En Progreso</div></div><div class="stat-card s-green"><div class="stat-number">${d}</div><div class="stat-label">Completadas</div></div><div class="stat-card s-high"><div class="stat-number">${b}</div><div class="stat-label">Bloqueadas</div></div></div>`;
+  // For expanded (virtual) tasks, use their instance status if recurring
+  const todayD=fmtDate(new Date());
+  const getS=t=>{
+    if(!t.recurrence||t.recurrence==='once')return t.status;
+    const date=t.specific_date||todayD;
+    return getInstanceStatus(t,date);
+  };
+  const total=list.length;
+  const ip=list.filter(x=>getS(x)==='in_progress').length;
+  const d=list.filter(x=>getS(x)==='completed').length;
+  const b=list.filter(x=>getS(x)==='blocked').length;
+  return `<div class="stats-row"><div class="stat-card s-purple"><div class="stat-number">${total}</div><div class="stat-label">Total</div></div><div class="stat-card s-cyan"><div class="stat-number">${ip}</div><div class="stat-label">En Progreso</div></div><div class="stat-card s-green"><div class="stat-number">${d}</div><div class="stat-label">Completadas</div></div><div class="stat-card s-high"><div class="stat-number">${b}</div><div class="stat-label">Bloqueadas</div></div></div>`;
 }
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 function toast(msg,type='success'){
@@ -2471,7 +2860,7 @@ function exportPDF(){
   if(!ph){ph=document.createElement('div');ph.className='print-header';document.getElementById('content').prepend(ph);}
   ph.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid #7C3AED">
     <div>
-      <div style="font-size:18px;font-weight:800;color:#0B1120">OPS Planner — Vista Semanal</div>
+      <div style="font-size:18px;font-weight:800;color:#1E1648">OPS Planner — Vista Semanal</div>
       <div style="font-size:12px;color:#666">${s} al ${e} · Departamento de Operaciones</div>
     </div>
     <div style="font-size:11px;color:#999">Generado: ${new Date().toLocaleString('es-SV')}</div>
@@ -2547,7 +2936,7 @@ function renderNotifPanel(){
 
   const iconMap={
     'due-today':   {svg:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--s-medium)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',cls:'due-today'},
-    'due-tomorrow':{svg:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',cls:'due-tomorrow'},
+    'due-tomorrow':{svg:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--sky)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',cls:'due-tomorrow'},
     'overdue':     {svg:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--s-high)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',cls:'overdue'},
     'blocked':     {svg:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--s-high)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>',cls:'blocked'},
     'status-changed':{svg:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--st-done)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',cls:'status-changed'},
