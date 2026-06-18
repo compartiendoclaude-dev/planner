@@ -1922,11 +1922,14 @@ function renderDaily(){
   document.getElementById('content').innerHTML=nav+(filtered.length?noTimeHtml+`<div>${tl}</div>`:`<div class="empty-state"><div class="empty-icon">🌤</div><p>Sin tareas este día</p><button class="btn btn-primary" onclick="openNewTaskDay(${dow},'${dateStr}')">＋ Agregar</button></div>`);
 }
 function dailyCard(t){
+  const cardDate=t.specific_date||fmtDate(currentDay);
+  const isRecurring_d=t.recurrence&&t.recurrence!=="once";
+  const displayStatus_d=isRecurring_d?getInstanceStatus(t,cardDate):t.status;
   const ms=(t.assigned_to||[]).map(id=>{const m=getMember(id);return m?`<span style="font-size:11px;color:${m.avatar_color};font-weight:500">${m.name.split(' ')[0]}</span>`:''}).join('');
-  return `<div class="daily-task-card priority-${t.priority}" style="margin-bottom:6px" onclick="editTask('${t.id}')">
+  return `<div class="daily-task-card priority-${t.priority}" style="margin-bottom:6px" onclick="editTask('${t.id}',cardDate)">
     <div class="dt-header"><span class="dt-title">${t.title}</span>${t.time_slot?`<span class="dt-time">${t.time_slot.slice(0,5)}</span>`:''}<span class="badge badge-priority-${t.priority}">${PL[t.priority]}</span></div>
     ${t.description?`<div class="dt-desc">${t.description}</div>`:''}
-    <div class="dt-meta">${ms}<span class="badge badge-status-${t.status}" style="margin-left:auto">${SL[t.status]}</span></div>
+    <div class="dt-meta">${ms}<span class="badge badge-status-${displayStatus_d}" style="margin-left:auto">${SL[displayStatus_d]}</span></div>
   </div>`;
 }
 
@@ -1938,11 +1941,13 @@ function renderList(){
     const as=(t.assigned_to||[]).map(id=>{const m=getMember(id);return m?`<span style="font-size:11px;font-weight:500;color:${m.avatar_color}">${m.name.split(' ')[0]}</span>`:''}).join(' ');
     const tgs=(t.tags||[]).map(id=>{const g=getTag(id);return g?`<span class="badge badge-tag">${g.name}</span>`:''}).join('');
     const dateDisp=t.specific_date?fmt(t.specific_date+'T12:00:00',{day:'numeric',month:'short'}):(t.day_of_week!=null?dayName(t.day_of_week):'—');
-    return `<tr onclick="editTask('${t.id}')">
+    const listInstDate=(t.recurrence&&t.recurrence!=="once")?(t.specific_date||fmtDate(new Date())):null;
+    const listStatus=listInstDate?getInstanceStatus(t,listInstDate):t.status;
+    return `<tr onclick="editTask('${t.id}',listInstDate||null)">
       <td><div class="list-row-title">${t.title}${t.recurrence&&t.recurrence!=='once'?' 🔄':''}</div><div class="list-row-desc">${t.description||''}</div></td>
       <td>${as||'—'}</td><td>${dateDisp}</td><td>${t.time_slot?t.time_slot.slice(0,5):'—'}</td>
       <td><span class="badge badge-priority-${t.priority}">${PL[t.priority]}</span></td>
-      <td><span class="badge badge-status-${t.status}">${SL[t.status]}</span></td>
+      <td><span class="badge badge-status-${listStatus}">${SL[listStatus]||SL[t.status]}</span></td>
       <td>${tgs}</td>
     </tr>`;
   }).join('');
@@ -2163,15 +2168,16 @@ function openNewTaskStatus(s){openNewTask({status:s});}
 function editTask(id,instanceDate){
   const t=tasks.find(x=>x.id===id);if(!t)return;
   editingTaskId=id;
-  editingInstanceDate=instanceDate||null; // track which date this recurring task is being edited for
+  const isRec_e=t.recurrence&&t.recurrence!=="once";
+  editingInstanceDate=(isRec_e&&instanceDate&&instanceDate!=="null"&&instanceDate!=="")?(instanceDate):null;
   _tm={assignedTo:[...(t.assigned_to||[])],selectedTags:[...(t.tags||[])],dayOfWeek:t.day_of_week,recurrenceDay:t.recurrence_day};
   const isRecurring=t.recurrence&&t.recurrence!=='once';
   // For recurring tasks, show the instance status for this date
-  const tForModal=isRecurring&&instanceDate
-    ? {...t, status: getInstanceStatus(t,instanceDate), _instanceDate: instanceDate}
+  const tForModal=isRecurring&&editingInstanceDate
+    ? {...t, status: getInstanceStatus(t,editingInstanceDate), _instanceDate: editingInstanceDate}
     : t;
-  document.getElementById('modal-title').textContent=isRecurring&&instanceDate
-    ? `Editar — ${fmt(instanceDate+'T12:00:00',{weekday:'short',day:'numeric',month:'short'})}`
+  document.getElementById('modal-title').textContent=isRecurring&&editingInstanceDate
+    ? `Editar — ${fmt(editingInstanceDate+'T12:00:00',{weekday:'short',day:'numeric',month:'short'})}`
     : 'Editar Tarea';
   document.getElementById('btn-delete').style.display='block';
   renderModalBody(tForModal);
@@ -2504,6 +2510,10 @@ async function saveTask(){
     const isRecurring=oldTask?.recurrence&&oldTask.recurrence!=='once';
 
     // ── RECURRING TASK: status change goes to instance, rest to master ──
+    // Safety: if recurring but no instance date was captured, fall back to today
+    if(isRecurring&&!editingInstanceDate){
+      editingInstanceDate=fmtDate(new Date());
+    }
     if(isRecurring&&editingInstanceDate){
       const oldInstanceStatus=getInstanceStatus(oldTask,editingInstanceDate);
       const masterPayload={...payload};
