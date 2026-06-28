@@ -3542,6 +3542,10 @@ function openNotifSettings(){
         <label class="toggle-switch"><input type="checkbox" id="ns-blocked" ${notifSettings.blocked?'checked':''}><span class="toggle-slider"></span></label>
       </div>
       <div class="notif-settings-row">
+        <span class="notif-settings-label">Push al reloj / móvil</span>
+        <button onclick="subscribeToPush();closeModal('notif-settings-modal')" class="btn btn-primary" style="font-size:11px;padding:5px 12px">Activar</button>
+      </div>
+      <div class="notif-settings-row">
         <span class="notif-settings-label">Frecuencia de revisión</span>
         <select id="ns-polling" class="form-select" style="width:auto;padding:6px 10px;font-size:12px">
           <option value="5"  ${notifSettings.polling===5 ?'selected':''}>Cada 5 min</option>
@@ -3878,6 +3882,65 @@ async function renderAccessLogs(){
       </div>
     </div>`;
 }
+
+// ══════════════════════════════════════════════════════════
+//  WEB PUSH NOTIFICATIONS
+// ══════════════════════════════════════════════════════════
+const VAPID_PUBLIC_KEY = 'BEiRvswkYAgtLJlyCsHnqT9SA2j0QsaT4Yd5e4RnDjqWHj2UfzZk5Yzsw9d9yFwsjnlG2BrwRgEHmCl5R1If4P0';
+const PUSH_EDGE_URL    = 'https://ylsouysqlkzlfwkbvitt.supabase.co/functions/v1/send-push';
+
+function urlBase64ToUint8Array(b64){
+  const padding='='.repeat((4-b64.length%4)%4);
+  const base64=(b64+padding).replace(/-/g,'+').replace(/_/g,'/');
+  const raw=atob(base64);
+  return new Uint8Array([...raw].map(c=>c.charCodeAt(0)));
+}
+
+async function registerServiceWorker(){
+  if(!('serviceWorker' in navigator))return null;
+  try{
+    return await navigator.serviceWorker.register('/watch-sw.js');
+  }catch(e){console.warn('SW:',e);return null;}
+}
+
+async function subscribeToPush(){
+  if(!('PushManager' in window)){toast('Tu navegador no soporta push','error');return;}
+  const perm=await Notification.requestPermission();
+  if(perm!=='granted'){toast('Permiso denegado','error');return;}
+  try{
+    const reg=await navigator.serviceWorker.ready;
+    const sub=await reg.pushManager.subscribe({
+      userVisibleOnly:true,
+      applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+    });
+    if(currentMember){
+      await supa.from('planner_push_subscriptions').upsert({
+        member_id:currentMember.id,
+        subscription:sub.toJSON(),
+        device:navigator.userAgent.includes('Mobile')?'Mobile':'Desktop',
+      },{onConflict:'member_id,subscription'});
+    }
+    notifSettings.pushEnabled=true;
+    saveNotifState();
+    toast('Notificaciones push activadas ✓','success');
+  }catch(e){toast('Error: '+e.message,'error');}
+}
+
+async function sendPushToMember(memberId,title,body){
+  try{
+    const{data:subs}=await supa.from('planner_push_subscriptions')
+      .select('subscription').eq('member_id',memberId);
+    if(!subs||!subs.length)return;
+    await fetch(PUSH_EDGE_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({subscriptions:subs.map(s=>s.subscription),title,body,url:'/watch.html'}),
+    });
+  }catch(e){console.warn('Push send:',e);}
+}
+
+// Init SW
+registerServiceWorker();
 
 </script>
 </body>

@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1A0A3E">
+<title>OPS Watch</title>
+<link rel="manifest" href="watch-manifest.json">
+<style>
+/* ── WATCH OPTIMIZED: 396x396px circular display ── */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;}
+:root{
+  --bg:#1A0A3E;--surface:#2D1B6B;--card:#3D2A80;
+  --accent:#9B7FFF;--accent2:#C4B5FD;
+  --mint:#34D399;--rose:#FB7185;--amber:#FBBF24;--sky:#60A5FA;
+  --text:#F0EDFF;--muted:#8B7FC8;
+  --r:16px;
+}
+html,body{
+  width:396px;height:396px;overflow:hidden;
+  background:var(--bg);color:var(--text);
+  font-family:'Inter',system-ui,sans-serif;
+  display:flex;align-items:center;justify-content:center;
+}
+/* Circular clip */
+body{border-radius:50%;overflow:hidden;}
+
+/* ── SCREENS ── */
+.screen{
+  position:absolute;inset:0;border-radius:50%;
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  padding:32px 28px;
+  background:radial-gradient(ellipse at 50% 30%,#2D1B6B 0%,#1A0A3E 70%);
+}
+.screen.active{display:flex;}
+
+/* ── HOME SCREEN ── */
+.home-time{
+  font-size:52px;font-weight:800;letter-spacing:-2px;
+  color:var(--text);line-height:1;margin-bottom:4px;
+  text-align:center;
+}
+.home-date{font-size:13px;color:var(--muted);margin-bottom:18px;text-align:center;font-weight:500;}
+.home-stats{display:flex;gap:10px;margin-bottom:18px;}
+.home-stat{
+  display:flex;flex-direction:column;align-items:center;
+  background:rgba(155,127,255,.12);border:1px solid rgba(155,127,255,.2);
+  border-radius:12px;padding:8px 12px;min-width:60px;
+}
+.home-stat-num{font-size:22px;font-weight:800;color:var(--accent2);line-height:1;}
+.home-stat-label{font-size:9px;color:var(--muted);margin-top:2px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+.home-btn{
+  width:120px;height:38px;border-radius:99px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--accent),#7C5CFC);
+  color:#fff;font-size:13px;font-weight:700;
+  font-family:inherit;
+}
+
+/* ── TASK LIST SCREEN ── */
+.screen-header{
+  font-size:11px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;
+}
+.task-scroll{
+  width:100%;max-height:260px;overflow-y:auto;
+  display:flex;flex-direction:column;gap:6px;
+  -webkit-overflow-scrolling:touch;
+}
+.task-scroll::-webkit-scrollbar{display:none;}
+.watch-task{
+  background:var(--card);border-radius:12px;
+  padding:10px 12px;display:flex;align-items:center;gap:8px;
+  border:1px solid rgba(155,127,255,.15);
+  min-height:48px;cursor:pointer;
+  flex-shrink:0;
+}
+.watch-task:active{background:rgba(155,127,255,.2);}
+.watch-task-dot{
+  width:10px;height:10px;border-radius:50%;flex-shrink:0;
+}
+.dot-pending{background:var(--muted);}
+.dot-in_progress{background:var(--sky);}
+.dot-completed{background:var(--mint);}
+.dot-blocked{background:var(--rose);}
+.watch-task-title{
+  font-size:12px;font-weight:600;flex:1;line-height:1.3;
+  color:var(--text);
+}
+.watch-task.done .watch-task-title{opacity:.45;text-decoration:line-through;}
+.watch-task-time{font-size:10px;color:var(--muted);flex-shrink:0;}
+
+/* ── TASK DETAIL SCREEN ── */
+.detail-title{
+  font-size:15px;font-weight:800;text-align:center;
+  margin-bottom:6px;line-height:1.3;
+}
+.detail-sub{font-size:11px;color:var(--muted);text-align:center;margin-bottom:14px;}
+.detail-assignees{
+  display:flex;gap:4px;justify-content:center;margin-bottom:14px;
+}
+.detail-avatar{
+  width:28px;height:28px;border-radius:50%;font-size:10px;
+  font-weight:700;display:flex;align-items:center;justify-content:center;
+}
+.status-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;}
+.status-btn{
+  padding:10px 6px;border-radius:10px;border:none;cursor:pointer;
+  font-size:11px;font-weight:700;font-family:inherit;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  min-height:52px;
+}
+.status-btn.pending{background:rgba(139,127,200,.2);color:var(--muted);}
+.status-btn.in_progress{background:rgba(96,165,250,.15);color:var(--sky);}
+.status-btn.completed{background:rgba(52,211,153,.15);color:var(--mint);}
+.status-btn.blocked{background:rgba(251,113,133,.15);color:var(--rose);}
+.status-btn.active-status{box-shadow:0 0 0 2px currentColor;}
+.status-btn:active{filter:brightness(1.3);}
+.back-btn{
+  margin-top:10px;background:transparent;border:1px solid rgba(155,127,255,.3);
+  border-radius:99px;color:var(--muted);font-size:11px;font-weight:600;
+  padding:6px 18px;cursor:pointer;font-family:inherit;
+}
+
+/* ── NOTIFICATION SCREEN ── */
+.notif-list{
+  width:100%;max-height:270px;overflow-y:auto;
+  display:flex;flex-direction:column;gap:6px;
+  -webkit-overflow-scrolling:touch;
+}
+.notif-list::-webkit-scrollbar{display:none;}
+.watch-notif{
+  background:var(--card);border-radius:12px;
+  padding:10px 12px;border:1px solid rgba(155,127,255,.15);
+}
+.watch-notif-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.watch-notif-desc{font-size:10px;color:var(--muted);line-height:1.4;}
+.watch-notif.unread{border-color:rgba(155,127,255,.4);}
+
+/* ── BOTTOM NAV (arc style) ── */
+.watch-nav{
+  position:absolute;bottom:22px;left:50%;transform:translateX(-50%);
+  display:flex;gap:14px;
+}
+.nav-dot{
+  width:32px;height:32px;border-radius:50%;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:15px;
+  background:rgba(155,127,255,.12);
+}
+.nav-dot:active{background:rgba(155,127,255,.3);}
+.nav-dot.active-nav{background:rgba(155,127,255,.25);box-shadow:0 0 0 2px var(--accent);}
+
+/* ── LOADING ── */
+.watch-loading{
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+}
+.watch-spinner{
+  width:28px;height:28px;border:2.5px solid rgba(155,127,255,.2);
+  border-top-color:var(--accent);border-radius:50%;
+  animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+.watch-loading-text{font-size:11px;color:var(--muted);font-weight:500;}
+
+/* ── PUSH PERMISSION ── */
+.push-card{
+  background:var(--card);border-radius:16px;padding:16px;
+  border:1px solid rgba(155,127,255,.2);text-align:center;
+  width:100%;
+}
+.push-icon{font-size:28px;margin-bottom:8px;}
+.push-title{font-size:13px;font-weight:700;margin-bottom:4px;}
+.push-sub{font-size:10px;color:var(--muted);margin-bottom:12px;line-height:1.4;}
+.push-btn{
+  width:100%;padding:10px;border-radius:99px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--accent),#7C5CFC);
+  color:#fff;font-size:12px;font-weight:700;font-family:inherit;
+}
+
+/* ── CROWN BUTTON (right side) ── */
+.crown-btn{
+  position:absolute;right:-2px;top:50%;transform:translateY(-50%);
+  width:6px;height:40px;background:var(--surface);border-radius:3px;
+  cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="screen active" id="screen-loading">
+  <div class="watch-loading">
+    <div class="watch-spinner"></div>
+    <div class="watch-loading-text">Cargando…</div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div class="screen" id="screen-home">
+  <div class="home-time" id="home-time">00:00</div>
+  <div class="home-date" id="home-date">—</div>
+  <div class="home-stats">
+    <div class="home-stat">
+      <div class="home-stat-num" id="stat-total">0</div>
+      <div class="home-stat-label">Hoy</div>
+    </div>
+    <div class="home-stat">
+      <div class="home-stat-num" id="stat-done" style="color:var(--mint)">0</div>
+      <div class="home-stat-label">Hechas</div>
+    </div>
+    <div class="home-stat">
+      <div class="home-stat-num" id="stat-pending" style="color:var(--amber)">0</div>
+      <div class="home-stat-label">Pend.</div>
+    </div>
+  </div>
+  <button class="home-btn" onclick="showScreen('screen-tasks')">Ver tareas</button>
+</div>
+
+<!-- TASKS -->
+<div class="screen" id="screen-tasks">
+  <div class="screen-header" id="tasks-header">Tareas de hoy</div>
+  <div class="task-scroll" id="task-list"></div>
+  <div class="watch-nav">
+    <button class="nav-dot active-nav" onclick="showScreen('screen-home')" title="Inicio">🏠</button>
+    <button class="nav-dot" onclick="showScreen('screen-notifs')" title="Notificaciones">🔔</button>
+    <button class="nav-dot" onclick="requestPush()" title="Activar notificaciones">📲</button>
+  </div>
+</div>
+
+<!-- TASK DETAIL -->
+<div class="screen" id="screen-detail">
+  <div class="detail-title" id="detail-title">—</div>
+  <div class="detail-sub" id="detail-sub">—</div>
+  <div class="detail-assignees" id="detail-assignees"></div>
+  <div class="status-btns">
+    <button class="status-btn pending" onclick="updateStatus('pending')">⏸<span>Pendiente</span></button>
+    <button class="status-btn in_progress" onclick="updateStatus('in_progress')">▶<span>En curso</span></button>
+    <button class="status-btn completed" onclick="updateStatus('completed')">✓<span>Lista</span></button>
+    <button class="status-btn blocked" onclick="updateStatus('blocked')">⛔<span>Bloqueada</span></button>
+  </div>
+  <button class="back-btn" onclick="showScreen('screen-tasks')">← Volver</button>
+</div>
+
+<!-- NOTIFICATIONS -->
+<div class="screen" id="screen-notifs">
+  <div class="screen-header">Notificaciones</div>
+  <div class="notif-list" id="notif-list-watch"></div>
+  <div class="watch-nav">
+    <button class="nav-dot" onclick="showScreen('screen-home')">🏠</button>
+    <button class="nav-dot active-nav" onclick="showScreen('screen-notifs')">🔔</button>
+    <button class="nav-dot" onclick="requestPush()">📲</button>
+  </div>
+</div>
+
+<!-- PUSH PERMISSION -->
+<div class="screen" id="screen-push">
+  <div class="push-card">
+    <div class="push-icon">🔔</div>
+    <div class="push-title">Activar alertas</div>
+    <div class="push-sub">Recibe tareas y recordatorios directamente aquí</div>
+    <button class="push-btn" onclick="enablePush()">Activar</button>
+  </div>
+  <div class="watch-nav" style="bottom:18px">
+    <button class="nav-dot" onclick="showScreen('screen-home')">🏠</button>
+  </div>
+</div>
+
+<!-- Crown button -->
+<div class="crown-btn" onclick="showScreen('screen-home')" title="Home"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ── CONFIG ──
+const SUPA_URL  = 'https://ylsouysqlkzlfwkbvitt.supabase.co';
+const SUPA_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlsc291eXNxbGt6bGZ3a2J2aXR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4OTc0NDQsImV4cCI6MjA5NTQ3MzQ0NH0.zT6IpElm6KgVduSMDpsSc1Y7I0zkoqYvX9Bo4Wyrkhw';
+const VAPID_PUB = 'BEiRvswkYAgtLJlyCsHnqT9SA2j0QsaT4Yd5e4RnDjqWHj2UfzZk5Yzsw9d9yFwsjnlG2BrwRgEHmCl5R1If4P0';
+const EDGE_URL  = 'https://ylsouysqlkzlfwkbvitt.supabase.co/functions/v1/send-push';
+
+const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+// ── STATE ──
+let tasks=[], members=[], instances={}, currentTask=null;
+
+// ── UTILS ──
+function fmtDate(d){return new Date(d).toISOString().split('T')[0];}
+function todayStr(){return fmtDate(new Date());}
+function initials(n){return(n||'').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?';}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ── SCREEN NAVIGATION ──
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ── CLOCK ──
+function updateClock(){
+  const now=new Date();
+  const h=String(now.getHours()).padStart(2,'0');
+  const m=String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('home-time').textContent=`${h}:${m}`;
+  document.getElementById('home-date').textContent=now.toLocaleDateString('es-SV',{weekday:'short',day:'numeric',month:'short'});
+}
+setInterval(updateClock,1000);
+updateClock();
+
+// ── LOAD DATA ──
+async function loadData(){
+  const session=await supa.auth.getSession();
+  if(!session.data.session){
+    // Not logged in — show login prompt
+    showLoginPrompt();
+    return;
+  }
+
+  const today=todayStr();
+  const[tRes,mRes,iRes]=await Promise.all([
+    supa.from('planner_tasks').select('*').order('created_at',{ascending:false}),
+    supa.from('planner_members').select('*').order('name'),
+    supa.from('planner_task_instances').select('*').eq('instance_date',today),
+  ]);
+
+  tasks=tRes.data||[];
+  members=mRes.data||[];
+  instances={};
+  (iRes.data||[]).forEach(i=>instances[i.task_id]=i);
+
+  renderHome();
+  renderTaskList();
+  renderNotifs();
+  showScreen('screen-home');
+}
+
+// ── GET STATUS (instance-aware) ──
+function getStatus(t){
+  if(!t.recurrence||t.recurrence==='once')return t.status;
+  return instances[t.id]?.status||'pending';
+}
+
+// ── TODAY'S TASKS ──
+function getTodayTasks(){
+  const today=todayStr();
+  const todayDow=(new Date().getDay()+6)%7;
+  const createdFloor=t=>t.created_at?t.created_at.slice(0,10):'1970-01-01';
+
+  return tasks.filter(t=>{
+    if(today<createdFloor(t))return false;
+    if(!t.recurrence||t.recurrence==='once'){
+      return t.specific_date===today||(t.day_of_week===todayDow&&!t.specific_date);
+    }
+    if(t.recurrence==='daily')return todayDow<5;
+    if(t.recurrence==='weekly')return true;
+    if(t.recurrence==='specific_day')return(t.recurrence_day??t.day_of_week)===todayDow;
+    if(t.recurrence==='monthly'&&t.specific_date){
+      const orig=new Date(t.specific_date+'T12:00:00');
+      return orig.getDate()===new Date().getDate();
+    }
+    return false;
+  });
+}
+
+// ── RENDER HOME ──
+function renderHome(){
+  const todayTasks=getTodayTasks();
+  const done=todayTasks.filter(t=>getStatus(t)==='completed').length;
+  const pending=todayTasks.filter(t=>getStatus(t)==='pending').length;
+  document.getElementById('stat-total').textContent=todayTasks.length;
+  document.getElementById('stat-done').textContent=done;
+  document.getElementById('stat-pending').textContent=pending;
+}
+
+// ── RENDER TASK LIST ──
+function renderTaskList(){
+  const todayTasks=getTodayTasks();
+  document.getElementById('tasks-header').textContent=`${todayTasks.length} tarea${todayTasks.length!==1?'s':''} hoy`;
+  const list=document.getElementById('task-list');
+  if(!todayTasks.length){
+    list.innerHTML='<div style="text-align:center;color:var(--muted);font-size:12px;padding:20px">Sin tareas para hoy 🎉</div>';
+    return;
+  }
+  // Sort: pending/in_progress first, completed last
+  const sorted=[...todayTasks].sort((a,b)=>{
+    const order={pending:0,in_progress:1,blocked:2,completed:3};
+    return(order[getStatus(a)]||0)-(order[getStatus(b)]||0);
+  });
+  list.innerHTML=sorted.map(t=>{
+    const st=getStatus(t);
+    const isDone=st==='completed';
+    const time=t.time_slot?t.time_slot.slice(0,5):'';
+    return `<div class="watch-task ${isDone?'done':''}" onclick="openDetail('${t.id}')">
+      <div class="watch-task-dot dot-${st}"></div>
+      <div class="watch-task-title">${esc(t.title)}</div>
+      ${time?`<div class="watch-task-time">${time}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ── RENDER NOTIFS ──
+function renderNotifs(){
+  const today=todayStr();
+  const notifs=[];
+  const todayTasks=getTodayTasks();
+
+  todayTasks.forEach(t=>{
+    const st=getStatus(t);
+    if(st==='blocked') notifs.push({title:`⛔ Bloqueada`,desc:t.title,unread:true});
+    if(st==='pending'&&t.time_slot&&t.time_slot.slice(0,5)<=new Date().toTimeString().slice(0,5))
+      notifs.push({title:`⏰ Hora pasada`,desc:`${t.time_slot.slice(0,5)} — ${t.title}`,unread:true});
+  });
+
+  const list=document.getElementById('notif-list-watch');
+  if(!notifs.length){
+    list.innerHTML='<div style="text-align:center;color:var(--muted);font-size:12px;padding:20px">Sin notificaciones</div>';
+    return;
+  }
+  list.innerHTML=notifs.map(n=>`
+    <div class="watch-notif ${n.unread?'unread':''}">
+      <div class="watch-notif-title">${esc(n.title)}</div>
+      <div class="watch-notif-desc">${esc(n.desc)}</div>
+    </div>`).join('');
+}
+
+// ── TASK DETAIL ──
+function openDetail(id){
+  const t=tasks.find(x=>x.id===id);if(!t)return;
+  currentTask=t;
+  document.getElementById('detail-title').textContent=t.title;
+  const st=getStatus(t);
+  const stLabels={pending:'Pendiente',in_progress:'En progreso',completed:'Completada',blocked:'Bloqueada'};
+  const timeStr=t.time_slot?` · ${t.time_slot.slice(0,5)}`:'';
+  document.getElementById('detail-sub').textContent=`${stLabels[st]||st}${timeStr}`;
+
+  // Assignees
+  const avHtml=(t.assigned_to||[]).slice(0,4).map(id=>{
+    const m=members.find(x=>x.id===id);
+    if(!m)return'';
+    return`<div class="detail-avatar" style="background:${m.avatar_color}22;color:${m.avatar_color}">${initials(m.name)}</div>`;
+  }).join('');
+  document.getElementById('detail-assignees').innerHTML=avHtml;
+
+  // Highlight current status
+  document.querySelectorAll('.status-btn').forEach(btn=>{
+    btn.classList.toggle('active-status',btn.classList.contains(st));
+  });
+
+  showScreen('screen-detail');
+}
+
+// ── UPDATE STATUS ──
+async function updateStatus(newStatus){
+  if(!currentTask)return;
+  const t=currentTask;
+  const isRec=t.recurrence&&t.recurrence!=='once';
+  const today=todayStr();
+
+  if(isRec){
+    const existing=instances[t.id];
+    if(existing){
+      await supa.from('planner_task_instances')
+        .update({status:newStatus,updated_at:new Date().toISOString()})
+        .eq('id',existing.id);
+      instances[t.id]={...existing,status:newStatus};
+    }else{
+      const{data}=await supa.from('planner_task_instances')
+        .insert({task_id:t.id,instance_date:today,status:newStatus})
+        .select().single();
+      if(data)instances[t.id]=data;
+    }
+  }else{
+    await supa.from('planner_tasks')
+      .update({status:newStatus,updated_at:new Date().toISOString()})
+      .eq('id',t.id);
+    const idx=tasks.findIndex(x=>x.id===t.id);
+    if(idx>-1)tasks[idx]={...tasks[idx],status:newStatus};
+  }
+
+  // Update detail UI
+  document.querySelectorAll('.status-btn').forEach(btn=>{
+    btn.classList.toggle('active-status',btn.classList.contains(newStatus));
+  });
+  const stLabels={pending:'Pendiente',in_progress:'En progreso',completed:'Completada',blocked:'Bloqueada'};
+  document.getElementById('detail-sub').textContent=stLabels[newStatus]||newStatus;
+
+  // Refresh home + list
+  renderHome();
+  renderTaskList();
+  renderNotifs();
+
+  // Haptic feedback if available
+  if(navigator.vibrate)navigator.vibrate(50);
+}
+
+// ── PUSH NOTIFICATIONS ──
+function requestPush(){showScreen('screen-push');}
+
+function urlBase64ToUint8(b64){
+  const padding='='.repeat((4-b64.length%4)%4);
+  const base64=(b64+padding).replace(/-/g,'+').replace(/_/g,'/');
+  const raw=atob(base64);
+  return new Uint8Array([...raw].map(c=>c.charCodeAt(0)));
+}
+
+async function enablePush(){
+  if(!('serviceWorker' in navigator)||!('PushManager' in window)){
+    alert('Tu navegador no soporta notificaciones push.');
+    showScreen('screen-home');
+    return;
+  }
+  try{
+    const perm=await Notification.requestPermission();
+    if(perm!=='granted'){
+      alert('Permiso denegado. Actívalo en configuración del navegador.');
+      showScreen('screen-home');
+      return;
+    }
+    const reg=await navigator.serviceWorker.ready;
+    const sub=await reg.pushManager.subscribe({
+      userVisibleOnly:true,
+      applicationServerKey:urlBase64ToUint8(VAPID_PUB),
+    });
+
+    // Save subscription to Supabase
+    const session=await supa.auth.getSession();
+    const memberId=session.data.session?.user?.email;
+    const{data:member}=await supa.from('planner_members').select('id').eq('email',memberId).single();
+
+    if(member){
+      await supa.from('planner_push_subscriptions').upsert({
+        member_id:member.id,
+        subscription:sub.toJSON(),
+        device:'Samsung Watch / Mobile',
+      },{onConflict:'member_id,subscription'});
+    }
+
+    if(navigator.vibrate)navigator.vibrate([50,30,50]);
+    showScreen('screen-home');
+    // Small toast
+    const t=document.createElement('div');
+    t.style.cssText='position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:var(--mint);color:#000;padding:6px 14px;border-radius:99px;font-size:11px;font-weight:700;z-index:999';
+    t.textContent='✓ Alertas activadas';
+    document.body.appendChild(t);
+    setTimeout(()=>t.remove(),2500);
+  }catch(e){
+    console.error('Push error:',e);
+    alert('Error al activar: '+e.message);
+    showScreen('screen-home');
+  }
+}
+
+// ── LOGIN PROMPT ──
+function showLoginPrompt(){
+  const s=document.getElementById('screen-loading');
+  s.innerHTML=`<div style="text-align:center;padding:20px">
+    <div style="font-size:28px;margin-bottom:10px">🔐</div>
+    <div style="font-size:13px;font-weight:700;margin-bottom:6px">Inicia sesión</div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:14px;line-height:1.5">Abre el planner en tu teléfono e inicia sesión primero</div>
+    <button onclick="loadData()" style="background:var(--accent);border:none;color:#fff;padding:8px 20px;border-radius:99px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">Reintentar</button>
+  </div>`;
+  s.classList.add('active');
+}
+
+// ── REGISTER SERVICE WORKER ──
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('watch-sw.js').catch(e=>console.warn('SW:',e));
+}
+
+// ── INIT ──
+loadData();
+
+// Auto-refresh every 2 minutes
+setInterval(()=>{
+  loadData();
+}, 120000);
+</script>
+</body>
+</html>
