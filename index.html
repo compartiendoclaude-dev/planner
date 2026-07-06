@@ -1146,6 +1146,27 @@ body.dnd-active .dnd-col-overlay{display:block;}
 .access-log-time{margin-left:auto;font-size:11px;color:var(--text-muted);white-space:nowrap;}
 .access-log-device{font-size:10px;color:var(--text-muted);margin-top:2px;}
 
+
+/* ══ DATE QUICK FILTERS ══ */
+.fg-date-presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.fg-date-preset{
+  padding:5px 11px;border-radius:99px;font-size:11px;font-weight:600;
+  border:1.5px solid var(--border-strong);cursor:pointer;
+  background:transparent;color:var(--text-secondary);
+  font-family:'Plus Jakarta Sans',sans-serif;
+}
+.fg-date-preset:hover{background:var(--bg-hover);color:var(--text-primary);}
+.fg-date-preset.active{
+  background:var(--accent-glow);border-color:rgba(124,92,252,.35);
+  color:var(--accent);font-weight:700;
+}
+.fg-date-inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.fg-date-manual-label{
+  font-size:10px;color:var(--text-muted);font-weight:600;
+  text-transform:uppercase;letter-spacing:.5px;
+  margin-bottom:6px;margin-top:2px;
+}
+
 </style>
 </head>
 <body>
@@ -1493,6 +1514,7 @@ let filters={
   timeTo:'',
   status:[],        // array
   priority:[],      // array
+  _preset:'',       // active quick preset id
 };
 
 // Temp filters in drawer (applied on button click)
@@ -1804,7 +1826,7 @@ function applyDrawerFilters(){
   renderView();
 }
 function clearAllFilters(){
-  filters={title:'',description:'',members:[],dayOfWeek:null,dateFrom:'',dateTo:'',timeFrom:'',timeTo:'',status:[],priority:[]};
+  filters={title:'',description:'',members:[],dayOfWeek:null,dateFrom:'',dateTo:'',timeFrom:'',timeTo:'',status:[],priority:[],_preset:''};
   drawerFilters=JSON.parse(JSON.stringify(filters));
   searchQuery='';
   const si=document.getElementById('search-input');if(si)si.value='';
@@ -1853,10 +1875,20 @@ function renderFilterDrawer(){
       <div class="fg-chips">${dayChips}</div>
     </div>
     <div>
-      <div class="fg-label">Rango de fechas</div>
-      <div class="fg-date-row">
-        <div class="form-group"><label class="form-label">Desde</label><input class="form-input" type="date" value="${f.dateFrom||''}" onchange="drawerFilters.dateFrom=this.value"></div>
-        <div class="form-group"><label class="form-label">Hasta</label><input class="form-input" type="date" value="${f.dateTo||''}" onchange="drawerFilters.dateTo=this.value"></div>
+      <div class="fg-label">Filtro de fechas</div>
+      <div class="fg-date-presets" id="date-preset-chips">
+        ${buildDatePresetChips(f)}
+      </div>
+      <div class="fg-date-manual-label">O elige rango manual</div>
+      <div class="fg-date-inputs">
+        <div class="form-group"><label class="form-label">Desde</label>
+          <input class="form-input" type="date" id="df-from" value="${f.dateFrom||''}"
+            onchange="drawerFilters.dateFrom=this.value;drawerFilters._preset='custom';refreshPresetChips()">
+        </div>
+        <div class="form-group"><label class="form-label">Hasta</label>
+          <input class="form-input" type="date" id="df-to" value="${f.dateTo||''}"
+            onchange="drawerFilters.dateTo=this.value;drawerFilters._preset='custom';refreshPresetChips()">
+        </div>
       </div>
     </div>
     <div>
@@ -3941,6 +3973,73 @@ async function sendPushToMember(memberId,title,body){
 
 // Init SW
 registerServiceWorker();
+
+// ══════════════════════════════════════════════════════════
+//  DATE FILTER PRESETS
+// ══════════════════════════════════════════════════════════
+function isoDate(d){return d.toISOString().split('T')[0];}
+function addDaysTo(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r;}
+
+function getDatePresets(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const weekStart=getWeekStart(today);
+  const weekEnd=addDaysTo(weekStart,6);
+  const lastWeekStart=addDaysTo(weekStart,-7);
+  const lastWeekEnd=addDaysTo(weekStart,-1);
+  const nextWeekStart=addDaysTo(weekStart,7);
+  const nextWeekEnd=addDaysTo(weekStart,13);
+  const monthStart=new Date(today.getFullYear(),today.getMonth(),1);
+  const monthEnd=new Date(today.getFullYear(),today.getMonth()+1,0);
+  const lastMonthStart=new Date(today.getFullYear(),today.getMonth()-1,1);
+  const lastMonthEnd=new Date(today.getFullYear(),today.getMonth(),0);
+
+  return [
+    {id:'today',     label:'Hoy',           from:isoDate(today),          to:isoDate(today)},
+    {id:'yesterday', label:'Ayer',           from:isoDate(addDaysTo(today,-1)), to:isoDate(addDaysTo(today,-1))},
+    {id:'tomorrow',  label:'Mañana',         from:isoDate(addDaysTo(today,1)),  to:isoDate(addDaysTo(today,1))},
+    {id:'this_week', label:'Esta semana',    from:isoDate(weekStart),      to:isoDate(weekEnd)},
+    {id:'last_week', label:'Semana pasada',  from:isoDate(lastWeekStart),  to:isoDate(lastWeekEnd)},
+    {id:'next_week', label:'Próxima semana', from:isoDate(nextWeekStart),  to:isoDate(nextWeekEnd)},
+    {id:'next_3d',   label:'Próx. 3 días',  from:isoDate(today),          to:isoDate(addDaysTo(today,2))},
+    {id:'next_7d',   label:'Próx. 7 días',  from:isoDate(today),          to:isoDate(addDaysTo(today,6))},
+    {id:'this_month',label:'Este mes',       from:isoDate(monthStart),     to:isoDate(monthEnd)},
+    {id:'last_month',label:'Mes pasado',     from:isoDate(lastMonthStart), to:isoDate(lastMonthEnd)},
+  ];
+}
+
+function buildDatePresetChips(f){
+  const presets=getDatePresets();
+  const active=f._preset||'';
+  return presets.map(p=>`
+    <div class="fg-date-preset ${active===p.id?'active':''}"
+      onclick="applyDatePreset('${p.id}','${p.from}','${p.to}')">
+      ${p.label}
+    </div>`).join('');
+}
+
+function applyDatePreset(id,from,to){
+  // Toggle off if already active
+  if(drawerFilters._preset===id){
+    drawerFilters._preset='';
+    drawerFilters.dateFrom='';
+    drawerFilters.dateTo='';
+  }else{
+    drawerFilters._preset=id;
+    drawerFilters.dateFrom=from;
+    drawerFilters.dateTo=to;
+  }
+  // Update date inputs
+  const dfrom=document.getElementById('df-from');
+  const dto=document.getElementById('df-to');
+  if(dfrom)dfrom.value=drawerFilters.dateFrom;
+  if(dto)dto.value=drawerFilters.dateTo;
+  refreshPresetChips();
+}
+
+function refreshPresetChips(){
+  const container=document.getElementById('date-preset-chips');
+  if(container)container.innerHTML=buildDatePresetChips(drawerFilters);
+}
 
 </script>
 </body>
