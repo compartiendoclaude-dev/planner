@@ -1147,27 +1147,6 @@ body.dnd-active .dnd-col-overlay{display:block;}
 .access-log-time{margin-left:auto;font-size:11px;color:var(--text-muted);white-space:nowrap;}
 .access-log-device{font-size:10px;color:var(--text-muted);margin-top:2px;}
 
-
-/* ══ DATE QUICK FILTERS ══ */
-.fg-date-presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
-.fg-date-preset{
-  padding:5px 11px;border-radius:99px;font-size:11px;font-weight:600;
-  border:1.5px solid var(--border-strong);cursor:pointer;
-  background:transparent;color:var(--text-secondary);
-  font-family:'Plus Jakarta Sans',sans-serif;
-}
-.fg-date-preset:hover{background:var(--bg-hover);color:var(--text-primary);}
-.fg-date-preset.active{
-  background:var(--accent-glow);border-color:rgba(124,92,252,.35);
-  color:var(--accent);font-weight:700;
-}
-.fg-date-inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.fg-date-manual-label{
-  font-size:10px;color:var(--text-muted);font-weight:600;
-  text-transform:uppercase;letter-spacing:.5px;
-  margin-bottom:6px;margin-top:2px;
-}
-
 </style>
 </head>
 <body>
@@ -1515,7 +1494,6 @@ let filters={
   timeTo:'',
   status:[],        // array
   priority:[],      // array
-  _preset:'',       // active quick preset id
 };
 
 // Temp filters in drawer (applied on button click)
@@ -1684,7 +1662,7 @@ async function onLogin(user){
   document.getElementById('app').classList.add('show');
   renderSidebarUser();applyRoleUI();
   await loadData();updateWeekDisplay();renderView();
-  loadNotifState();loadEmailSettings();startNotifPolling();startSessionWatcher();initEmailJS();
+  loadEmailSettings();loadNotifState();startNotifPolling();startSessionWatcher();initEmailJS();
 }
 async function doLogout(){
   logAccess('logout');
@@ -1827,7 +1805,7 @@ function applyDrawerFilters(){
   renderView();
 }
 function clearAllFilters(){
-  filters={title:'',description:'',members:[],dayOfWeek:null,dateFrom:'',dateTo:'',timeFrom:'',timeTo:'',status:[],priority:[],_preset:''};
+  filters={title:'',description:'',members:[],dayOfWeek:null,dateFrom:'',dateTo:'',timeFrom:'',timeTo:'',status:[],priority:[]};
   drawerFilters=JSON.parse(JSON.stringify(filters));
   searchQuery='';
   const si=document.getElementById('search-input');if(si)si.value='';
@@ -1876,20 +1854,10 @@ function renderFilterDrawer(){
       <div class="fg-chips">${dayChips}</div>
     </div>
     <div>
-      <div class="fg-label">Filtro de fechas</div>
-      <div class="fg-date-presets" id="date-preset-chips">
-        ${buildDatePresetChips(f)}
-      </div>
-      <div class="fg-date-manual-label">O elige rango manual</div>
-      <div class="fg-date-inputs">
-        <div class="form-group"><label class="form-label">Desde</label>
-          <input class="form-input" type="date" id="df-from" value="${f.dateFrom||''}"
-            onchange="drawerFilters.dateFrom=this.value;drawerFilters._preset='custom';refreshPresetChips()">
-        </div>
-        <div class="form-group"><label class="form-label">Hasta</label>
-          <input class="form-input" type="date" id="df-to" value="${f.dateTo||''}"
-            onchange="drawerFilters.dateTo=this.value;drawerFilters._preset='custom';refreshPresetChips()">
-        </div>
+      <div class="fg-label">Rango de fechas</div>
+      <div class="fg-date-row">
+        <div class="form-group"><label class="form-label">Desde</label><input class="form-input" type="date" value="${f.dateFrom||''}" onchange="drawerFilters.dateFrom=this.value"></div>
+        <div class="form-group"><label class="form-label">Hasta</label><input class="form-input" type="date" value="${f.dateTo||''}" onchange="drawerFilters.dateTo=this.value"></div>
       </div>
     </div>
     <div>
@@ -3009,11 +2977,9 @@ async function saveTask(){
     if(res.error){toast('Error: '+res.error.message,'error');return;}
     if(res.data?.id){
       await insertHistory(res.data.id,'created',null,null,title);
-      // Send email notification to assigned members
       if(_tm.assignedTo.length){
-        sendTaskEmail({...payload,id:res.data.id},_tm.assignedTo)
-          .then(()=>{ if(_tm.assignedTo.some(id=>members.find(m=>m.id===id)?.email)) toast('📧 Notificación enviada','info'); })
-          .catch(()=>{});
+        const sent=await sendTaskEmail({...payload,id:res.data.id},_tm.assignedTo);
+        if(sent>0) toast('📧 Notificación enviada por email','info');
       }
     }
   }
@@ -3583,10 +3549,6 @@ function openNotifSettings(){
         <label class="toggle-switch"><input type="checkbox" id="ns-blocked" ${notifSettings.blocked?'checked':''}><span class="toggle-slider"></span></label>
       </div>
       <div class="notif-settings-row">
-        <span class="notif-settings-label">Email al asignar tarea</span>
-        <label class="toggle-switch"><input type="checkbox" id="ns-email" ${emailSettings.enabled?'checked':''}><span class="toggle-slider"></span></label>
-      </div>
-      <div class="notif-settings-row">
         <span class="notif-settings-label">Push al reloj / móvil</span>
         <button onclick="subscribeToPush();closeModal('notif-settings-modal')" class="btn btn-primary" style="font-size:11px;padding:5px 12px">Activar</button>
       </div>
@@ -3990,73 +3952,6 @@ async function sendPushToMember(memberId,title,body){
 registerServiceWorker();
 
 // ══════════════════════════════════════════════════════════
-//  DATE FILTER PRESETS
-// ══════════════════════════════════════════════════════════
-function isoDate(d){return d.toISOString().split('T')[0];}
-function addDaysTo(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r;}
-
-function getDatePresets(){
-  const today=new Date();today.setHours(0,0,0,0);
-  const weekStart=getWeekStart(today);
-  const weekEnd=addDaysTo(weekStart,6);
-  const lastWeekStart=addDaysTo(weekStart,-7);
-  const lastWeekEnd=addDaysTo(weekStart,-1);
-  const nextWeekStart=addDaysTo(weekStart,7);
-  const nextWeekEnd=addDaysTo(weekStart,13);
-  const monthStart=new Date(today.getFullYear(),today.getMonth(),1);
-  const monthEnd=new Date(today.getFullYear(),today.getMonth()+1,0);
-  const lastMonthStart=new Date(today.getFullYear(),today.getMonth()-1,1);
-  const lastMonthEnd=new Date(today.getFullYear(),today.getMonth(),0);
-
-  return [
-    {id:'today',     label:'Hoy',           from:isoDate(today),          to:isoDate(today)},
-    {id:'yesterday', label:'Ayer',           from:isoDate(addDaysTo(today,-1)), to:isoDate(addDaysTo(today,-1))},
-    {id:'tomorrow',  label:'Mañana',         from:isoDate(addDaysTo(today,1)),  to:isoDate(addDaysTo(today,1))},
-    {id:'this_week', label:'Esta semana',    from:isoDate(weekStart),      to:isoDate(weekEnd)},
-    {id:'last_week', label:'Semana pasada',  from:isoDate(lastWeekStart),  to:isoDate(lastWeekEnd)},
-    {id:'next_week', label:'Próxima semana', from:isoDate(nextWeekStart),  to:isoDate(nextWeekEnd)},
-    {id:'next_3d',   label:'Próx. 3 días',  from:isoDate(today),          to:isoDate(addDaysTo(today,2))},
-    {id:'next_7d',   label:'Próx. 7 días',  from:isoDate(today),          to:isoDate(addDaysTo(today,6))},
-    {id:'this_month',label:'Este mes',       from:isoDate(monthStart),     to:isoDate(monthEnd)},
-    {id:'last_month',label:'Mes pasado',     from:isoDate(lastMonthStart), to:isoDate(lastMonthEnd)},
-  ];
-}
-
-function buildDatePresetChips(f){
-  const presets=getDatePresets();
-  const active=f._preset||'';
-  return presets.map(p=>`
-    <div class="fg-date-preset ${active===p.id?'active':''}"
-      onclick="applyDatePreset('${p.id}','${p.from}','${p.to}')">
-      ${p.label}
-    </div>`).join('');
-}
-
-function applyDatePreset(id,from,to){
-  // Toggle off if already active
-  if(drawerFilters._preset===id){
-    drawerFilters._preset='';
-    drawerFilters.dateFrom='';
-    drawerFilters.dateTo='';
-  }else{
-    drawerFilters._preset=id;
-    drawerFilters.dateFrom=from;
-    drawerFilters.dateTo=to;
-  }
-  // Update date inputs
-  const dfrom=document.getElementById('df-from');
-  const dto=document.getElementById('df-to');
-  if(dfrom)dfrom.value=drawerFilters.dateFrom;
-  if(dto)dto.value=drawerFilters.dateTo;
-  refreshPresetChips();
-}
-
-function refreshPresetChips(){
-  const container=document.getElementById('date-preset-chips');
-  if(container)container.innerHTML=buildDatePresetChips(drawerFilters);
-}
-
-// ══════════════════════════════════════════════════════════
 //  EMAIL NOTIFICATIONS — EmailJS
 // ══════════════════════════════════════════════════════════
 const EJS_SVC = 'service_iaiv4u9';
@@ -4065,66 +3960,70 @@ const EJS_KEY = 'ZmJbgzr6t3iJGWV4L';
 
 let _ejsReady = false;
 function initEmailJS(){
-  if(typeof emailjs==='undefined')return;
-  emailjs.init(EJS_KEY);
-  _ejsReady=true;
+  try{
+    if(typeof emailjs==='undefined'){
+      // retry in 1s if CDN not loaded yet
+      setTimeout(initEmailJS, 1000); return;
+    }
+    emailjs.init(EJS_KEY);
+    _ejsReady = true;
+    console.log('EmailJS ready');
+  }catch(e){ console.warn('EmailJS init error:',e); }
 }
 
-// Called after new task is created
-async function sendTaskEmail(task, assignedMemberIds){
-  if(!_ejsReady||!assignedMemberIds.length)return;
-  if(!emailSettings.enabled)return;
-
-  // Get assigned members with emails
-  const assigned=members.filter(m=>assignedMemberIds.includes(m.id)&&m.email);
-  if(!assigned.length)return;
-
-  const priorityLabel={high:'🔴 Alta',medium:'🟡 Media',low:'🟢 Baja'};
-  const statusLabel={pending:'Pendiente',in_progress:'En Progreso',completed:'Completada',blocked:'Bloqueada'};
-  const recLabel={once:'Una vez',daily:'Lun–Vie',weekly:'Lun–Dom',specific_day:'Día específico',monthly:'Mensual'};
-
-  const dateStr=task.specific_date
-    ? new Date(task.specific_date+'T12:00:00').toLocaleDateString('es-SV',{weekday:'long',day:'numeric',month:'long',year:'numeric'})
-    : task.day_of_week!=null?['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'][task.day_of_week]
-    : '—';
-
-  const tagNames=(task.tags||[]).map(id=>{const g=tags.find(t=>t.id===id);return g?g.name:null;}).filter(Boolean).join(', ')||'—';
-  const creatorName=currentMember?.name||'Administrador';
-  const timeStr=task.time_slot?task.time_slot.slice(0,5):'Sin hora';
-  const recStr=recLabel[task.recurrence||'once']||'Una vez';
-
-  // Send one email per assigned member
-  const promises=assigned.map(member=>{
-    const params={
-      to_email:   member.email,
-      to_name:    member.name,
-      task_title: task.title,
-      task_desc:  task.description||'Sin descripción',
-      task_date:  dateStr,
-      task_time:  timeStr,
-      task_priority: priorityLabel[task.priority]||task.priority,
-      task_status:   statusLabel[task.status]||task.status,
-      task_recurrence: recStr,
-      task_tags:  tagNames,
-      task_notes: task.notes||'—',
-      assigned_to: assigned.map(m=>m.name).join(', '),
-      created_by: creatorName,
-      planner_url:'https://myplanner-sv.vercel.app',
-    };
-    return emailjs.send(EJS_SVC, EJS_TPL, params)
-      .catch(e=>console.warn('EmailJS error for',member.email,e));
-  });
-
-  await Promise.allSettled(promises);
-}
-
-// Email settings (persisted in localStorage)
-let emailSettings={enabled:true,onlyMyTasks:false};
+let emailSettings = {enabled:true};
 function loadEmailSettings(){
   try{const s=localStorage.getItem('ops_email_settings');if(s)emailSettings={...emailSettings,...JSON.parse(s)};}catch(e){}
 }
 function saveEmailSettings(){
   try{localStorage.setItem('ops_email_settings',JSON.stringify(emailSettings));}catch(e){}
+}
+
+async function sendTaskEmail(task, assignedMemberIds){
+  if(!_ejsReady){ console.warn('EmailJS not ready'); return; }
+  if(!emailSettings.enabled){ console.log('Email disabled'); return; }
+  if(!assignedMemberIds||!assignedMemberIds.length) return;
+
+  const assigned = members.filter(m => assignedMemberIds.includes(m.id) && m.email);
+  if(!assigned.length){ console.log('No members with email'); return; }
+
+  const priLabel = {high:'Alta',medium:'Media',low:'Baja'};
+  const stLabel  = {pending:'Pendiente',in_progress:'En Progreso',completed:'Completada',blocked:'Bloqueada'};
+  const recLabel = {once:'Una vez',daily:'Lun–Vie',weekly:'Lun–Dom',specific_day:'Día específico',monthly:'Mensual'};
+
+  const dateStr = task.specific_date
+    ? new Date(task.specific_date+'T12:00:00').toLocaleDateString('es-SV',{weekday:'long',day:'numeric',month:'long',year:'numeric'})
+    : task.day_of_week!=null ? ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'][task.day_of_week] : '—';
+
+  const tagNames = (task.tags||[]).map(id=>{const g=tags.find(t=>t.id===id);return g?g.name:null;}).filter(Boolean).join(', ')||'—';
+  const creatorName = currentMember?.name||'Administrador';
+
+  const results = await Promise.allSettled(assigned.map(member => {
+    const params = {
+      to_email:        member.email,
+      to_name:         member.name,
+      task_title:      task.title||'Sin título',
+      task_desc:       task.description||'Sin descripción',
+      task_date:       dateStr,
+      task_time:       task.time_slot?task.time_slot.slice(0,5):'Sin hora',
+      task_priority:   priLabel[task.priority]||task.priority||'—',
+      task_status:     stLabel[task.status]||task.status||'—',
+      task_recurrence: recLabel[task.recurrence||'once']||'Una vez',
+      task_tags:       tagNames,
+      task_notes:      task.notes||'—',
+      assigned_to:     assigned.map(m=>m.name).join(', '),
+      created_by:      creatorName,
+      planner_url:     'https://myplanner-sv.vercel.app',
+    };
+    console.log('Sending email to:', member.email, params);
+    return emailjs.send(EJS_SVC, EJS_TPL, params);
+  }));
+
+  const ok = results.filter(r=>r.status==='fulfilled').length;
+  const fail = results.filter(r=>r.status==='rejected');
+  if(fail.length) console.warn('EmailJS failures:', fail.map(f=>f.reason));
+  console.log(`EmailJS: ${ok}/${results.length} sent`);
+  return ok;
 }
 
 </script>
