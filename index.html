@@ -2980,6 +2980,11 @@ async function saveTask(){
       if(_tm.assignedTo.length){
         const sent=await sendTaskEmail({...payload,id:res.data.id},_tm.assignedTo);
         if(sent>0) toast('📧 Notificación enviada por email','info');
+        // WhatsApp — open wa.me links for members with phone
+        if(emailSettings.whatsapp!==false){
+          const hasPhone=_tm.assignedTo.some(id=>members.find(m=>m.id===id)?.phone);
+          if(hasPhone) sendWhatsAppNotifications({...payload,id:res.data.id},_tm.assignedTo);
+        }
       }
     }
   }
@@ -3569,6 +3574,7 @@ function openNotifSettings(){
 
 function saveNotifSettings(){
   emailSettings.enabled=document.getElementById('ns-email')?.checked??true;
+  emailSettings.whatsapp=document.getElementById('ns-whatsapp')?.checked??true;
   saveEmailSettings();
   notifSettings.dueToday   =document.getElementById('ns-today').checked;
   notifSettings.dueTomorrow=document.getElementById('ns-tomorrow').checked;
@@ -4024,6 +4030,56 @@ async function sendTaskEmail(task, assignedMemberIds){
   if(fail.length) console.warn('EmailJS failures:', fail.map(f=>f.reason));
   console.log(`EmailJS: ${ok}/${results.length} sent`);
   return ok;
+}
+
+// ══════════════════════════════════════════════════════════
+//  WHATSAPP NOTIFICATIONS — wa.me links
+// ══════════════════════════════════════════════════════════
+function sendWhatsAppNotifications(task, assignedMemberIds){
+  if(!assignedMemberIds||!assignedMemberIds.length)return;
+
+  // Get members with phone numbers
+  const assigned=members.filter(m=>assignedMemberIds.includes(m.id)&&m.phone);
+  if(!assigned.length)return;
+
+  const priLabel={high:'🔴 Alta',medium:'🟡 Media',low:'🟢 Baja'};
+  const dateStr=task.specific_date
+    ? new Date(task.specific_date+'T12:00:00').toLocaleDateString('es-SV',{weekday:'long',day:'numeric',month:'long'})
+    : task.day_of_week!=null?['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'][task.day_of_week]:'—';
+  const timeStr=task.time_slot?`a las ${task.time_slot.slice(0,5)}`:'sin hora';
+  const creatorName=currentMember?.name||'el administrador';
+  const allNames=assigned.map(m=>m.name.split(' ')[0]).join(', ');
+
+  assigned.forEach((member,idx)=>{
+    const msg=
+      `Hola ${member.name.split(' ')[0]} 👋
+
+`+
+      `Se te asignó una nueva tarea en OPS Planner:
+
+`+
+      `📋 *${task.title}*
+`+
+      (task.description?`📝 ${task.description}
+`:'')+
+      `📅 ${dateStr} ${timeStr}
+`+
+      `${priLabel[task.priority]||'Media'} prioridad
+`+
+      (allNames!==member.name.split(' ')[0]?`👥 También asignado a: ${allNames}
+`:'')+
+      `
+✅ Ver planner: https://myplanner-sv.vercel.app`;
+
+    // Clean phone: remove spaces, dashes, parens
+    const rawPhone=sanitizePhone(member.phone).replace(/[\s\-\(\)]/g,'');
+    if(!rawPhone)return;
+
+    // Open each link with a small delay so browser doesn't block popups
+    setTimeout(()=>{
+      window.open(`https://wa.me/${rawPhone}?text=${encodeURIComponent(msg)}`,'_blank','noopener');
+    }, idx * 800);
+  });
 }
 
 </script>
