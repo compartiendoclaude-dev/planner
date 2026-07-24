@@ -1574,7 +1574,7 @@ function sanitizeUrl(url){
 
 
 // ── STATE ──
-let currentView='daily',currentWeekStart=getWeekStart(new Date()),currentDay=new Date(),currentMonth=new Date();
+let currentView='summary',currentWeekStart=getWeekStart(new Date()),currentDay=new Date(),currentMonth=new Date();
 let tasks=[],members=[],tags=[],taskInstances={},contacts=[]; // taskInstances[taskId_date] = instance row
 let editingTaskId=null,editingInstanceDate=null,editingUserId=null,changePwdUserId=null;
 let currentUser=null,currentMember=null,isAdmin=false;
