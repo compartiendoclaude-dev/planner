@@ -1147,6 +1147,82 @@ body.dnd-active .dnd-col-overlay{display:block;}
 .access-log-time{margin-left:auto;font-size:11px;color:var(--text-muted);white-space:nowrap;}
 .access-log-device{font-size:10px;color:var(--text-muted);margin-top:2px;}
 
+
+/* ══ SUMMARY DRILL-DOWN ══ */
+.drill-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.drill-title{font-size:15px;font-weight:800;color:var(--text-primary);flex:1;}
+.drill-subtitle{font-size:12px;color:var(--text-muted);margin-top:2px;}
+.drill-stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.drill-stat{
+  display:flex;flex-direction:column;align-items:center;
+  background:var(--bg-hover);border-radius:var(--radius-sm);
+  padding:10px 16px;border:1px solid var(--border-card);min-width:80px;
+}
+.drill-stat-num{font-size:22px;font-weight:800;line-height:1;}
+.drill-stat-label{font-size:10px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-top:3px;}
+.drill-task-list{display:flex;flex-direction:column;gap:7px;}
+.drill-task-row{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:var(--radius-sm);
+  background:var(--bg-surface);border:1px solid var(--border-card);
+  cursor:pointer;
+}
+.drill-task-row:hover{background:var(--bg-hover);}
+.drill-task-row.status-completed{opacity:.6;}
+.drill-task-left{display:flex;align-items:center;gap:8px;flex:1;min-width:0;}
+.drill-task-title{font-size:13px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.drill-task-title.done{text-decoration:line-through;opacity:.6;}
+.drill-task-meta{font-size:11px;color:var(--text-muted);margin-top:1px;}
+.drill-task-right{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.drill-assignees{display:flex;}
+.drill-avatar{width:20px;height:20px;border-radius:50%;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--bg-surface);margin-left:-4px;}
+.drill-avatar:first-child{margin-left:0;}
+.drill-empty{text-align:center;padding:40px 20px;color:var(--text-muted);font-size:13px;}
+.drill-section-label{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;margin:12px 0 6px;padding-left:2px;}
+.stat-card.clickable{cursor:pointer;}
+.stat-card.clickable:hover{box-shadow:var(--shadow-md);transform:translateY(-2px);border-color:rgba(124,92,252,.3);}
+.summary-day-row.clickable{cursor:pointer;}
+.summary-day-row.clickable:hover{background:var(--bg-hover);}
+
+
+/* ══ SUMMARY FILTERS ══ */
+.sum-filter-bar{
+  background:var(--bg-surface);border:1px solid var(--border-card);
+  border-radius:var(--radius);padding:14px 16px;margin-bottom:16px;
+  box-shadow:var(--shadow-xs);display:flex;flex-direction:column;gap:12px;
+}
+.sum-filter-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.sum-filter-label{font-size:10px;font-weight:700;color:var(--text-muted);
+  text-transform:uppercase;letter-spacing:.6px;min-width:52px;}
+.sum-chip{
+  padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;
+  border:1.5px solid var(--border-strong);cursor:pointer;
+  background:transparent;color:var(--text-secondary);
+  font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap;
+}
+.sum-chip:hover{background:var(--bg-hover);color:var(--text-primary);}
+.sum-chip.active{background:var(--accent-glow);border-color:rgba(124,92,252,.35);color:var(--accent);font-weight:700;}
+.sum-chip.chip-person{border-radius:99px;}
+.sum-filter-dates{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.sum-date-input{
+  background:var(--bg-hover);border:1.5px solid var(--border-strong);
+  border-radius:var(--radius-sm);padding:5px 9px;font-size:12px;
+  color:var(--text-primary);outline:none;font-family:'Plus Jakarta Sans',sans-serif;
+}
+.sum-date-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,92,252,.1);}
+.sum-filter-clear{
+  padding:5px 12px;border-radius:99px;font-size:11px;font-weight:600;
+  border:1.5px solid var(--border-strong);cursor:pointer;
+  background:transparent;color:var(--text-muted);
+  font-family:'Plus Jakarta Sans',sans-serif;margin-left:auto;
+}
+.sum-filter-clear:hover{background:var(--rose-bg);color:var(--rose);border-color:rgba(251,113,133,.25);}
+.sum-active-desc{
+  font-size:11px;color:var(--accent);font-weight:500;
+  background:var(--accent-soft);border-radius:99px;padding:3px 10px;
+  display:inline-block;
+}
+
 </style>
 </head>
 <body>
@@ -1361,6 +1437,23 @@ body.dnd-active .dnd-col-overlay{display:block;}
   </div>
 </div>
 
+
+<!-- MODAL: SUMMARY DRILL-DOWN -->
+<div class="modal-overlay" id="drill-modal">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><path d="M3 17h7M3 21h7"/></svg>
+      <span class="modal-title" id="drill-modal-title">Detalle</span>
+      <button class="modal-close" onclick="closeModal('drill-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="drill-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('drill-modal')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast-container" id="toast-container"></div>
 
@@ -1498,6 +1591,8 @@ let filters={
 
 // Temp filters in drawer (applied on button click)
 let drawerFilters={};
+// Summary tab own filters
+let sumFilter={period:'today',dateFrom:'',dateTo:'',members:[],statuses:[]};
 let dirSearch='';
 let dirDeptFilter='all';
 let editingContactId=null;
@@ -1968,7 +2063,31 @@ function setView(view){
   document.getElementById('topbar-filter-btn').style.display=hideNew?'none':'';
   renderView();
 }
-function changeWeek(d){currentWeekStart=addDays(currentWeekStart,d*7);updateWeekDisplay();renderView();}
+function changeWeek(d){
+  currentWeekStart=addDays(currentWeekStart,d*7);
+  updateWeekDisplay();
+  // Always navigate to weekly view when using the week selector
+  if(currentView!=='weekly'){
+    currentView='weekly';
+    // Update nav active state
+    document.querySelectorAll('.nav-item').forEach(el=>{
+      const oc=el.getAttribute('onclick')||'';
+      el.classList.toggle('active', oc.includes("'weekly'"));
+    });
+    // Update topbar title
+    const tt=document.getElementById('topbar-title');
+    if(tt)tt.textContent='Vista Semanal';
+    // Update bottom nav
+    ['summary','daily','weekly','monthly','list','kanban'].forEach(v=>{
+      const bn=document.getElementById('bn-'+v);
+      if(bn)bn.classList.toggle('active',v==='weekly');
+    });
+    // Hide new task button logic
+    const btnNew=document.querySelector('.btn-new');
+    if(btnNew)btnNew.classList.remove('hidden');
+  }
+  renderView();
+}
 function updateWeekDisplay(){
   const e=addDays(currentWeekStart,6);
   document.getElementById('week-display').textContent=fmt(currentWeekStart,{day:'numeric',month:'short'})+' – '+fmt(e,{day:'numeric',month:'short'});
@@ -2048,86 +2167,198 @@ function expandTasks(rawTasks,weekStart,weekEnd){
 function renderSummary(){
   const today=new Date();today.setHours(0,0,0,0);
   const todayStr=fmtDate(today);
-  const todayDow=(today.getDay()+6)%7;
+  const yesterday=fmtDate(addDays(today,-1));
   const weekStart=getWeekStart(today),weekEnd=addDays(weekStart,6);
 
-  // Expand recurrences for the current week and filter same as other views
-  const expanded=expandTasks(tasks,weekStart,weekEnd);
-  const filtered=filteredTasks(expanded);
+  // ── Resolve date range from sumFilter ──
+  let rangeFrom='',rangeTo='';
+  if(sumFilter.period==='today'){       rangeFrom=todayStr;                   rangeTo=todayStr;}
+  else if(sumFilter.period==='yesterday'){rangeFrom=yesterday;                rangeTo=yesterday;}
+  else if(sumFilter.period==='week'){   rangeFrom=fmtDate(weekStart);         rangeTo=fmtDate(weekEnd);}
+  else if(sumFilter.period==='custom'){ rangeFrom=sumFilter.dateFrom||'';     rangeTo=sumFilter.dateTo||'';}
 
-  // Tasks scheduled for today
-  const todayTasks=filtered.filter(t=>(t.specific_date&&t.specific_date===todayStr)||(t.specific_date==null&&t.day_of_week===todayDow));
-  const todayDone=todayTasks.filter(t=>t.status==='completed').length;
-  const todayTotal=todayTasks.length;
-  const todayPct=todayTotal?Math.round((todayDone/todayTotal)*100):0;
+  // ── Expand tasks for range ──
+  const rFrom=rangeFrom?new Date(rangeFrom+'T00:00:00'):weekStart;
+  const rTo  =rangeTo  ?new Date(rangeTo  +'T23:59:59'):weekEnd;
+  const expanded=expandTasks(tasks,rFrom,rTo);
 
-  // Tasks scheduled for the current week
-  let weekTotal=0,weekDone=0;
-  for(let i=0;i<7;i++){
-    const d=addDays(weekStart,i),dateStr=fmtDate(d);
-    const dt=filtered.filter(t=>(t.specific_date&&t.specific_date===dateStr)||(t.specific_date==null&&t.day_of_week===i));
-    weekTotal+=dt.length;
-    weekDone+=dt.filter(t=>t.status==='completed').length;
-  }
-  const weekPct=weekTotal?Math.round((weekDone/weekTotal)*100):0;
-
-  // Breakdown by day of the current week
-  const dayRows=[];
-  for(let i=0;i<7;i++){
-    const d=addDays(weekStart,i),dateStr=fmtDate(d),isToday=d.getTime()===today.getTime();
-    const dt=filtered.filter(t=>(t.specific_date&&t.specific_date===dateStr)||(t.specific_date==null&&t.day_of_week===i));
-    const done=dt.filter(t=>t.status==='completed').length;
-    const total=dt.length;
-    const pct=total?Math.round((done/total)*100):0;
-    dayRows.push({label:dayName(i),dateStr,isToday,done,total,pct});
-  }
-
-  // Status breakdown for the week
-  const statusCounts={pending:0,in_progress:0,completed:0,blocked:0};
-  filtered.forEach(t=>{
-    let inWeek=false;
-    if(t.specific_date)inWeek=t.specific_date>=fmtDate(weekStart)&&t.specific_date<=fmtDate(weekEnd);
-    else if(t.day_of_week!=null)inWeek=true;
-    if(inWeek&&statusCounts[t.status]!=null)statusCounts[t.status]++;
+  // ── Apply range filter ──
+  let filtered=expanded.filter(t=>{
+    if(!t.specific_date)return true; // day_of_week tasks — included by expansion
+    if(rangeFrom&&t.specific_date<rangeFrom)return false;
+    if(rangeTo  &&t.specific_date>rangeTo)  return false;
+    return true;
   });
 
-  const pctColor=p=>p>=80?'var(--st-done)':p>=50?'var(--s-medium)':'var(--s-high)';
+  // ── Apply member filter ──
+  if(sumFilter.members.length){
+    filtered=filtered.filter(t=>(t.assigned_to||[]).some(id=>sumFilter.members.includes(id)));
+  }
 
+  // ── Apply status filter ──
+  if(sumFilter.statuses.length){
+    filtered=filtered.filter(t=>sumFilter.statuses.includes(t.status));
+  }
+
+  const total  =filtered.length;
+  const done   =filtered.filter(t=>t.status==='completed').length;
+  const inProg =filtered.filter(t=>t.status==='in_progress').length;
+  const pending=filtered.filter(t=>t.status==='pending').length;
+  const blocked=filtered.filter(t=>t.status==='blocked').length;
+  const pct    =total?Math.round(done/total*100):0;
+  const pctColor=p=>p>=80?'var(--mint)':p>=50?'var(--accent)':p>=20?'var(--amber)':'var(--rose)';
+
+  // ── Day breakdown (only for week / custom ranges spanning multiple days) ──
+  const isMultiDay=rangeFrom!==rangeTo||(sumFilter.period==='week')||(!rangeFrom&&!rangeTo);
+  const dayRows=[];
+  if(isMultiDay){
+    let cur=new Date(rFrom);cur.setHours(0,0,0,0);
+    const end=new Date(rTo);end.setHours(0,0,0,0);
+    while(cur<=end){
+      const dateStr=fmtDate(cur);
+      const dow=(cur.getDay()+6)%7;
+      const dt=filtered.filter(t=>t.specific_date===dateStr||(t.specific_date==null&&t.day_of_week===dow));
+      const d=dt.filter(t=>t.status==='completed').length;
+      const tot=dt.length;
+      dayRows.push({label:dayName(dow),dateStr,isToday:dateStr===todayStr,done:d,total:tot,pct:tot?Math.round(d/tot*100):0,dow});
+      cur=addDays(cur,1);
+    }
+  }
+
+  // ── Build filter bar ──
+  const periodChips=[
+    {id:'today',    label:'Hoy'},
+    {id:'yesterday',label:'Ayer'},
+    {id:'week',     label:'Esta semana'},
+    {id:'custom',   label:'Fechas'},
+  ];
+  const statusChips=[
+    {id:'completed', label:'✅ Completadas'},
+    {id:'in_progress',label:'🔵 En Progreso'},
+    {id:'pending',   label:'⏳ Pendientes'},
+    {id:'blocked',   label:'⛔ Bloqueadas'},
+  ];
+  const memberChips=members.map(m=>`
+    <div class="sum-chip chip-person ${sumFilter.members.includes(m.id)?'active':''}"
+      onclick="toggleSumMember('${m.id}')"
+      style="${sumFilter.members.includes(m.id)?`background:${m.avatar_color}22;border-color:${m.avatar_color};color:${m.avatar_color}`:''}">
+      ${m.name.split(' ')[0]}
+    </div>`).join('');
+
+  const hasFilters=sumFilter.period!=='today'||sumFilter.members.length||sumFilter.statuses.length||(sumFilter.dateFrom||sumFilter.dateTo);
+  const rangeDesc=rangeFrom?`${rangeFrom===rangeTo?rangeFrom:`${rangeFrom} → ${rangeTo||'…'}`}`:'Todo';
+
+  const filterBar=`
+  <div class="sum-filter-bar">
+    <!-- Period -->
+    <div class="sum-filter-row">
+      <span class="sum-filter-label">Período</span>
+      ${periodChips.map(c=>`<div class="sum-chip ${sumFilter.period===c.id?'active':''}" onclick="setSumPeriod('${c.id}')">${c.label}</div>`).join('')}
+      ${hasFilters?`<button class="sum-filter-clear" onclick="clearSumFilters()">✕ Limpiar</button>`:''}
+    </div>
+    <!-- Custom dates -->
+    ${sumFilter.period==='custom'?`
+    <div class="sum-filter-row">
+      <span class="sum-filter-label">Desde</span>
+      <input class="sum-date-input" type="date" value="${sumFilter.dateFrom}"
+        onchange="sumFilter.dateFrom=this.value;renderSummary()">
+      <span class="sum-filter-label" style="min-width:28px">Hasta</span>
+      <input class="sum-date-input" type="date" value="${sumFilter.dateTo}"
+        onchange="sumFilter.dateTo=this.value;renderSummary()">
+    </div>`:''}
+    <!-- People -->
+    <div class="sum-filter-row">
+      <span class="sum-filter-label">Persona</span>
+      ${memberChips||'<span style="font-size:12px;color:var(--text-muted)">Sin miembros</span>'}
+    </div>
+    <!-- Status -->
+    <div class="sum-filter-row">
+      <span class="sum-filter-label">Estado</span>
+      ${statusChips.map(c=>`<div class="sum-chip ${sumFilter.statuses.includes(c.id)?'active':''}" onclick="toggleSumStatus('${c.id}')">${c.label}</div>`).join('')}
+    </div>
+    <!-- Active desc -->
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span class="sum-active-desc">📅 ${rangeDesc} · ${total} tarea${total!==1?'s':''} · ${pct}% cumplimiento</span>
+    </div>
+  </div>`;
+
+  // ── Day rows ──
   const dayRowsHtml=dayRows.map(d=>`
-    <div class="summary-day-row ${d.isToday?'today':''}">
-      <div class="summary-day-label">${d.label}${d.isToday?' <span class="summary-today-tag">Hoy</span>':''}</div>
+    <div class="summary-day-row clickable ${d.isToday?'today':''}"
+      onclick="openDrillDown('${d.label} ${d.dateStr}',
+        filteredTasks(expandTasks(tasks,new Date('${d.dateStr}T00:00:00'),new Date('${d.dateStr}T23:59:59'))).filter(t=>t.specific_date==='${d.dateStr}'||(t.specific_date==null&&t.day_of_week===${d.dow})),
+        '${d.done} completadas de ${d.total} — ${d.pct}%')">
+      <div class="summary-day-label">${d.label} <span style="font-size:10px;color:var(--text-muted)">${d.dateStr.slice(5)}</span>${d.isToday?' <span class="summary-today-tag">Hoy</span>':''}</div>
       <div class="summary-day-bar"><div class="summary-day-bar-fill" style="width:${d.pct}%;background:${pctColor(d.pct)}"></div></div>
       <div class="summary-day-figures">${d.done}/${d.total}</div>
       <div class="summary-day-pct" style="color:${pctColor(d.pct)}">${d.pct}%</div>
     </div>`).join('');
 
   document.getElementById('content').innerHTML=`
-    <div class="summary-intro">📊 Indicadores de cumplimiento de tareas — actualizados en tiempo real según las tareas de hoy y de la semana actual (${fmt(weekStart,{day:'numeric',month:'short'})} – ${fmt(weekEnd,{day:'numeric',month:'short'})}).</div>
+    ${filterBar}
 
-    <div class="summary-section-title">Hoy — ${fmt(today,{weekday:'long',day:'numeric',month:'long'})}</div>
-    <div class="stats-row">
-      <div class="stat-card s-purple"><div class="stat-number">${todayTotal}</div><div class="stat-label">Tareas de hoy</div></div>
-      <div class="stat-card s-green"><div class="stat-number">${todayDone}</div><div class="stat-label">Completadas hoy</div></div>
-      <div class="stat-card" style="border:1px solid var(--border)"><div class="stat-number" style="color:${pctColor(todayPct)}">${todayPct}%</div><div class="stat-label">Cumplimiento de hoy</div></div>
+    <div class="stats-row" style="margin-bottom:14px">
+      <div class="stat-card s-purple clickable" onclick="openDrillDown('Todas las tareas',filtered,'${rangeDesc}')">
+        <div class="stat-number">${total}</div><div class="stat-label">Total</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Ver →</div>
+      </div>
+      <div class="stat-card s-green clickable" onclick="openDrillDown('Completadas',filtered.filter(t=>t.status===\'completed\'),'${rangeDesc}')">
+        <div class="stat-number">${done}</div><div class="stat-label">Completadas</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Ver →</div>
+      </div>
+      <div class="stat-card s-cyan clickable" onclick="openDrillDown('En Progreso',filtered.filter(t=>t.status===\'in_progress\'),'${rangeDesc}')">
+        <div class="stat-number">${inProg}</div><div class="stat-label">En Progreso</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Ver →</div>
+      </div>
+      <div class="stat-card clickable" style="border:1px solid var(--border)" onclick="openDrillDown('Cumplimiento',filtered,'${pct}% — ${done} de ${total}')">
+        <div class="stat-number" style="color:${pctColor(pct)}">${pct}%</div><div class="stat-label">Cumplimiento</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Ver →</div>
+      </div>
+    </div>
+    <div class="stats-row" style="margin-bottom:16px">
+      <div class="stat-card clickable" style="border:1px solid var(--border)" onclick="openDrillDown('Pendientes',filtered.filter(t=>t.status===\'pending\'),'${rangeDesc}')">
+        <div class="stat-number" style="color:var(--amber)">${pending}</div><div class="stat-label">Pendientes</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Ver →</div>
+      </div>
+      <div class="stat-card s-high clickable" onclick="openDrillDown('Bloqueadas',filtered.filter(t=>t.status===\'blocked\'),'Requieren atención')">
+        <div class="stat-number">${blocked}</div><div class="stat-label">Bloqueadas</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Ver →</div>
+      </div>
     </div>
 
-    <div class="summary-section-title">Esta semana</div>
-    <div class="stats-row">
-      <div class="stat-card s-purple"><div class="stat-number">${weekTotal}</div><div class="stat-label">Tareas de la semana</div></div>
-      <div class="stat-card s-green"><div class="stat-number">${weekDone}</div><div class="stat-label">Completadas en la semana</div></div>
-      <div class="stat-card" style="border:1px solid var(--border)"><div class="stat-number" style="color:${pctColor(weekPct)}">${weekPct}%</div><div class="stat-label">Cumplimiento semanal</div></div>
-      <div class="stat-card s-high"><div class="stat-number">${statusCounts.blocked}</div><div class="stat-label">Bloqueadas</div></div>
-    </div>
+    ${isMultiDay&&dayRows.length?`
+    <div class="summary-section-title">Cumplimiento por día</div>
+    <div class="summary-day-table">${dayRowsHtml}</div>`:''}
 
-    <div class="summary-section-title">Cumplimiento por día (esta semana)</div>
-    <div class="summary-day-table">${dayRowsHtml}</div>
-
-    <div class="summary-status-legend">
-      <span><span class="status-dot pending"></span> Pendiente: ${statusCounts.pending}</span>
-      <span><span class="status-dot in_progress"></span> En Progreso: ${statusCounts.in_progress}</span>
-      <span><span class="status-dot completed"></span> Completada: ${statusCounts.completed}</span>
-      <span><span class="status-dot blocked"></span> Bloqueada: ${statusCounts.blocked}</span>
+    <div class="summary-status-legend" style="margin-top:14px">
+      <span style="cursor:pointer" onclick="openDrillDown('Pendientes',filtered.filter(t=>t.status===\'pending\'),'')"><span class="status-dot pending"></span> Pendiente: ${pending}</span>
+      <span style="cursor:pointer" onclick="openDrillDown('En Progreso',filtered.filter(t=>t.status===\'in_progress\'),'')"><span class="status-dot in_progress"></span> En Progreso: ${inProg}</span>
+      <span style="cursor:pointer" onclick="openDrillDown('Completadas',filtered.filter(t=>t.status===\'completed\'),'')"><span class="status-dot completed"></span> Completada: ${done}</span>
+      <span style="cursor:pointer" onclick="openDrillDown('Bloqueadas',filtered.filter(t=>t.status===\'blocked\'),'')"><span class="status-dot blocked"></span> Bloqueada: ${blocked}</span>
     </div>`;
+}
+
+// ── SUMMARY FILTER HELPERS ──
+function setSumPeriod(p){
+  sumFilter.period=p;
+  if(p!=='custom'){sumFilter.dateFrom='';sumFilter.dateTo='';}
+  renderSummary();
+}
+function toggleSumMember(id){
+  const idx=sumFilter.members.indexOf(id);
+  if(idx>-1)sumFilter.members.splice(idx,1);
+  else sumFilter.members.push(id);
+  renderSummary();
+}
+function toggleSumStatus(id){
+  const idx=sumFilter.statuses.indexOf(id);
+  if(idx>-1)sumFilter.statuses.splice(idx,1);
+  else sumFilter.statuses.push(id);
+  renderSummary();
+}
+function clearSumFilters(){
+  sumFilter={period:'today',dateFrom:'',dateTo:'',members:[],statuses:[]};
+  renderSummary();
 }
 
 // ── WEEKLY ──
@@ -3194,7 +3425,7 @@ function toast(msg,type='success'){
   document.getElementById('toast-container').appendChild(el);
   setTimeout(()=>el.remove(),3500);
 }
-['task-modal','user-modal','pwd-modal','search-modal','notif-settings-modal','contact-modal'].forEach(id=>{
+['task-modal','user-modal','pwd-modal','search-modal','notif-settings-modal','contact-modal','drill-modal'].forEach(id=>{
   const el=document.getElementById(id);
   if(el)el.addEventListener('click',function(e){if(e.target===this)closeModal(id);});
 });
@@ -4080,6 +4311,78 @@ function sendWhatsAppNotifications(task, assignedMemberIds){
       window.open(`https://wa.me/${rawPhone}?text=${encodeURIComponent(msg)}`,'_blank','noopener');
     }, idx * 800);
   });
+}
+
+// ══════════════════════════════════════════════════════════
+//  SUMMARY DRILL-DOWN
+// ══════════════════════════════════════════════════════════
+function openDrillDown(title, taskList, subtitle){
+  document.getElementById('drill-modal-title').textContent=title;
+  const SL2={pending:'Pendiente',in_progress:'En Progreso',completed:'Completada',blocked:'Bloqueada'};
+  const PL2={high:'Alta',medium:'Media',low:'Baja'};
+
+  if(!taskList.length){
+    document.getElementById('drill-modal-body').innerHTML=`<div class="drill-empty">Sin tareas en esta categoría</div>`;
+    document.getElementById('drill-modal').classList.add('open');
+    return;
+  }
+
+  // Stats
+  const total=taskList.length;
+  const done=taskList.filter(t=>t.status==='completed').length;
+  const inProg=taskList.filter(t=>t.status==='in_progress').length;
+  const pending=taskList.filter(t=>t.status==='pending').length;
+  const blocked=taskList.filter(t=>t.status==='blocked').length;
+  const pct=total?Math.round(done/total*100):0;
+  const pctColor=p=>p>=80?'var(--mint)':p>=50?'var(--accent)':p>=20?'var(--amber)':'var(--rose)';
+
+  const statsHtml=`<div class="drill-stats">
+    <div class="drill-stat"><div class="drill-stat-num" style="color:var(--accent)">${total}</div><div class="drill-stat-label">Total</div></div>
+    <div class="drill-stat"><div class="drill-stat-num" style="color:var(--mint)">${done}</div><div class="drill-stat-label">Completadas</div></div>
+    <div class="drill-stat"><div class="drill-stat-num" style="color:var(--sky)">${inProg}</div><div class="drill-stat-label">En Curso</div></div>
+    <div class="drill-stat"><div class="drill-stat-num" style="color:var(--amber)">${pending}</div><div class="drill-stat-label">Pendientes</div></div>
+    ${blocked?`<div class="drill-stat"><div class="drill-stat-num" style="color:var(--rose)">${blocked}</div><div class="drill-stat-label">Bloqueadas</div></div>`:''}
+    <div class="drill-stat"><div class="drill-stat-num" style="color:${pctColor(pct)}">${pct}%</div><div class="drill-stat-label">Cumplimiento</div></div>
+  </div>`;
+
+  // Group: pending/in_progress first, then blocked, then completed
+  const groups=[
+    {label:'⏳ Pendientes / En curso', items:taskList.filter(t=>t.status==='pending'||t.status==='in_progress')},
+    {label:'⛔ Bloqueadas',            items:taskList.filter(t=>t.status==='blocked')},
+    {label:'✅ Completadas',           items:taskList.filter(t=>t.status==='completed')},
+  ];
+
+  const tasksHtml=groups.filter(g=>g.items.length).map(g=>`
+    <div class="drill-section-label">${g.label} (${g.items.length})</div>
+    <div class="drill-task-list">
+      ${g.items.map(t=>{
+        const isDone=t.status==='completed';
+        const avs=(t.assigned_to||[]).slice(0,3).map(id=>{
+          const m=getMember(id);
+          return m?`<div class="drill-avatar" style="background:${m.avatar_color}22;color:${m.avatar_color}">${initials(m.name)}</div>`:'';
+        }).join('');
+        const timeStr=t.time_slot?`⏰ ${t.time_slot.slice(0,5)} · `:'';
+        const priorityColors={high:'var(--rose)',medium:'var(--amber)',low:'var(--mint)'};
+        return `<div class="drill-task-row status-${t.status}" onclick="closeModal('drill-modal');editTask('${t.id}','${t.specific_date||''}')">
+          <div style="width:4px;height:36px;border-radius:99px;background:${priorityColors[t.priority]||'var(--border)'};flex-shrink:0"></div>
+          <div class="drill-task-left">
+            <div>
+              <div class="drill-task-title ${isDone?'done':''}">${esc(t.title)}</div>
+              <div class="drill-task-meta">${timeStr}${SL2[t.status]||t.status} · ${PL2[t.priority]||t.priority}</div>
+            </div>
+          </div>
+          <div class="drill-task-right">
+            <div class="drill-assignees">${avs}</div>
+            <span class="badge badge-status-${t.status}" style="font-size:10px">${SL2[t.status]||t.status}</span>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`).join('');
+
+  document.getElementById('drill-modal-body').innerHTML=
+    (subtitle?`<div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">${subtitle}</div>`:'')+
+    statsHtml+tasksHtml;
+  document.getElementById('drill-modal').classList.add('open');
 }
 
 </script>
