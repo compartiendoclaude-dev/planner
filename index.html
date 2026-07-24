@@ -1728,6 +1728,10 @@ function forceLogout(){
 
 
 async function doLogin(){
+  // Solicitar permiso de notificaciones aprovechando el gesto del usuario (click)
+  if('Notification' in window && Notification.permission==='default'){
+    Notification.requestPermission();
+  }
   // Rate limit check
   if(_loginLocked){
     showLoginError('Demasiados intentos. Espera antes de continuar.');return;
@@ -1765,6 +1769,8 @@ async function onLogin(user){
   renderSidebarUser();applyRoleUI();
   await loadData();updateWeekDisplay();renderView();
   loadEmailSettings();loadNotifState();startNotifPolling();startSessionWatcher();initEmailJS();
+  // Push resumen de tareas abiertas al iniciar sesión
+  setTimeout(()=>sendLoginPushSummary(),1200);
 }
 async function doLogout(){
   logAccess('logout');
@@ -4164,6 +4170,74 @@ async function renderAccessLogs(){
     </div>`;
 }
 
+
+// ══════════════════════════════════════════════════════════
+//  LOGIN PUSH SUMMARY — Notifica tareas abiertas al entrar
+// ══════════════════════════════════════════════════════════
+async function sendLoginPushSummary(){
+  if(!currentMember)return;
+
+  // Solo tareas de la SEMANA ACTUAL que no estén completadas
+  const _wkStart=getWeekStart(new Date());
+  const _wkEnd=addDays(_wkStart,6);
+  const _wkExpanded=expandTasks(tasks,_wkStart,_wkEnd);
+  const openTasks=_wkExpanded.filter(t=>{
+    const isRec=t.recurrence&&t.recurrence!=='once';
+    const st=isRec?getInstanceStatus(t,t.specific_date||fmtDate(new Date())):t.status;
+    return st!=='completed';
+  });
+  // Asignadas específicamente al usuario actual
+  const myTasks=openTasks.filter(t=>(t.assigned_to||[]).includes(currentMember.id));
+
+  // Si no hay nada abierto, no molestar
+  if(!openTasks.length)return;
+
+  const pending =openTasks.filter(t=>t.status==='pending').length;
+  const inProg  =openTasks.filter(t=>t.status==='in_progress').length;
+  const blocked =openTasks.filter(t=>t.status==='blocked').length;
+  const mine    =myTasks.length;
+
+  const total=openTasks.length;
+  const title=`OPS Planner — ${total} tarea${total!==1?'s':''} sin cerrar esta semana`;
+  const parts=[];
+  if(pending) parts.push(`⏳ ${pending} pendiente${pending!==1?'s':''}`);
+  if(inProg)  parts.push(`🔵 ${inProg} en progreso`);
+  if(blocked) parts.push(`⛔ ${blocked} bloqueada${blocked!==1?'s':''}`);
+  if(mine&&mine!==total) parts.push(`📌 ${mine} asignada${mine!==1?'s':''} a ti`);
+  const body=parts.join('  ·  ');
+
+  // ── Intento 1: Notificación via Service Worker (la más confiable con app abierta) ──
+  if('serviceWorker' in navigator&&Notification.permission==='granted'){
+    try{
+      const reg=await navigator.serviceWorker.ready;
+      await reg.showNotification(title,{
+        body,
+        icon:'https://myplanner-sv.vercel.app/favicon.ico',
+        badge:'https://myplanner-sv.vercel.app/favicon.ico',
+        tag:'ops-login-summary',      // reemplaza notif anterior del mismo tipo
+        requireInteraction:false,
+        vibrate:[200,100,200],
+        data:{url:'https://myplanner-sv.vercel.app'},
+      });
+      // ── Intento 2 (en paralelo): Web push via edge function para otros dispositivos ──
+      sendPushToMember(currentMember.id,title,body).catch(()=>{});
+      return;
+    }catch(e){
+      console.warn('SW showNotification:',e);
+    }
+  }
+
+  // ── Intento 2: Notification API directa (fallback) ──
+  if('Notification' in window&&Notification.permission==='granted'){
+    try{new Notification(title,{body,tag:'ops-login-summary'});}catch(e){}
+    sendPushToMember(currentMember.id,title,body).catch(()=>{});
+    return;
+  }
+
+  // ── Sin permiso: solo notificación in-app (bell icon) ──
+  // checkNotifications() ya está corriendo en el polling — no se necesita nada extra
+}
+
 // ══════════════════════════════════════════════════════════
 //  WEB PUSH NOTIFICATIONS
 // ══════════════════════════════════════════════════════════
@@ -4211,13 +4285,21 @@ async function sendPushToMember(memberId,title,body){
   try{
     const{data:subs}=await supa.from('planner_push_subscriptions')
       .select('subscription').eq('member_id',memberId);
-    if(!subs||!subs.length)return;
+    if(!subs||!subs.length)return 0;
     await fetch(PUSH_EDGE_URL,{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({subscriptions:subs.map(s=>s.subscription),title,body,url:'/watch.html'}),
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':`Bearer ${SUPA_KEY}`,
+      },
+      body:JSON.stringify({
+        subscriptions:subs.map(s=>s.subscription),
+        title,body,
+        url:'https://myplanner-sv.vercel.app',
+      }),
     });
-  }catch(e){console.warn('Push send:',e);}
+    return subs.length;
+  }catch(e){console.warn('Push send:',e);return 0;}
 }
 
 // Init SW
