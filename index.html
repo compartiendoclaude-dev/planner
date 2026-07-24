@@ -1592,6 +1592,7 @@ let filters={
 // Temp filters in drawer (applied on button click)
 let drawerFilters={};
 // Summary tab own filters
+let _sumDrillData={};
 let sumFilter={period:'today',dateFrom:'',dateTo:'',members:[],statuses:[]};
 let dirSearch='';
 let dirDeptFilter='all';
@@ -2178,17 +2179,23 @@ function renderSummary(){
   else if(sumFilter.period==='custom'){ rangeFrom=sumFilter.dateFrom||'';     rangeTo=sumFilter.dateTo||'';}
 
   // ── Expand tasks for range ──
-  const rFrom=rangeFrom?new Date(rangeFrom+'T00:00:00'):weekStart;
-  const rTo  =rangeTo  ?new Date(rangeTo  +'T23:59:59'):weekEnd;
-  const expanded=expandTasks(tasks,rFrom,rTo);
-
-  // ── Apply range filter ──
-  let filtered=expanded.filter(t=>{
-    if(!t.specific_date)return true; // day_of_week tasks — included by expansion
-    if(rangeFrom&&t.specific_date<rangeFrom)return false;
-    if(rangeTo  &&t.specific_date>rangeTo)  return false;
-    return true;
-  });
+  let rFrom=weekStart, rTo=weekEnd;
+  let filtered;
+  if(sumFilter.period==='all'){
+    // Sin filtro de fechas — todas las tareas sin expandir recurrentes
+    filtered=[...tasks];
+  }else{
+    rFrom=rangeFrom?new Date(rangeFrom+'T00:00:00'):weekStart;
+    rTo  =rangeTo  ?new Date(rangeTo  +'T23:59:59'):weekEnd;
+    const expanded=expandTasks(tasks,rFrom,rTo);
+    // ── Apply range filter ──
+    filtered=expanded.filter(t=>{
+      if(!t.specific_date)return true; // day_of_week tasks — included by expansion
+      if(rangeFrom&&t.specific_date<rangeFrom)return false;
+      if(rangeTo  &&t.specific_date>rangeTo)  return false;
+      return true;
+    });
+  }
 
   // ── Apply member filter ──
   if(sumFilter.members.length){
@@ -2200,6 +2207,15 @@ function renderSummary(){
     filtered=filtered.filter(t=>sumFilter.statuses.includes(t.status));
   }
 
+  // ── Store drill sets globally para acceso desde onclick ──
+  _sumDrillData={
+    total:filtered,
+    completed:filtered.filter(t=>t.status==='completed'),
+    in_progress:filtered.filter(t=>t.status==='in_progress'),
+    pending:filtered.filter(t=>t.status==='pending'),
+    blocked:filtered.filter(t=>t.status==='blocked'),
+  };
+
   const total  =filtered.length;
   const done   =filtered.filter(t=>t.status==='completed').length;
   const inProg =filtered.filter(t=>t.status==='in_progress').length;
@@ -2209,7 +2225,7 @@ function renderSummary(){
   const pctColor=p=>p>=80?'var(--mint)':p>=50?'var(--accent)':p>=20?'var(--amber)':'var(--rose)';
 
   // ── Day breakdown (only for week / custom ranges spanning multiple days) ──
-  const isMultiDay=rangeFrom!==rangeTo||(sumFilter.period==='week')||(!rangeFrom&&!rangeTo);
+  const isMultiDay=sumFilter.period!=='all'&&(rangeFrom!==rangeTo||(sumFilter.period==='week')||(!rangeFrom&&!rangeTo));
   const dayRows=[];
   if(isMultiDay){
     let cur=new Date(rFrom);cur.setHours(0,0,0,0);
@@ -2227,6 +2243,7 @@ function renderSummary(){
 
   // ── Build filter bar ──
   const periodChips=[
+    {id:'all',      label:'Todo'},
     {id:'today',    label:'Hoy'},
     {id:'yesterday',label:'Ayer'},
     {id:'week',     label:'Esta semana'},
@@ -2246,7 +2263,7 @@ function renderSummary(){
     </div>`).join('');
 
   const hasFilters=sumFilter.period!=='today'||sumFilter.members.length||sumFilter.statuses.length||(sumFilter.dateFrom||sumFilter.dateTo);
-  const rangeDesc=rangeFrom?`${rangeFrom===rangeTo?rangeFrom:`${rangeFrom} → ${rangeTo||'…'}`}`:'Todo';
+  const rangeDesc=sumFilter.period==='all'?'Todo el tiempo':(rangeFrom?`${rangeFrom===rangeTo?rangeFrom:`${rangeFrom} → ${rangeTo||'…'}`}`:'Todos');
 
   const filterBar=`
   <div class="sum-filter-bar">
@@ -2298,29 +2315,29 @@ function renderSummary(){
     ${filterBar}
 
     <div class="stats-row" style="margin-bottom:14px">
-      <div class="stat-card s-purple clickable" onclick="openDrillDown('Todas las tareas',filtered,'${rangeDesc}')">
+      <div class="stat-card s-purple clickable" onclick="drillSet('total','Todas las tareas','${rangeDesc}')">
         <div class="stat-number">${total}</div><div class="stat-label">Total</div>
         <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Ver →</div>
       </div>
-      <div class="stat-card s-green clickable" onclick="openDrillDown('Completadas',filtered.filter(t=>t.status===\'completed\'),'${rangeDesc}')">
+      <div class="stat-card s-green clickable" onclick="drillSet('completed','Completadas','${rangeDesc}')">
         <div class="stat-number">${done}</div><div class="stat-label">Completadas</div>
         <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Ver →</div>
       </div>
-      <div class="stat-card s-cyan clickable" onclick="openDrillDown('En Progreso',filtered.filter(t=>t.status===\'in_progress\'),'${rangeDesc}')">
+      <div class="stat-card s-cyan clickable" onclick="drillSet('in_progress','En Progreso','${rangeDesc}')">
         <div class="stat-number">${inProg}</div><div class="stat-label">En Progreso</div>
         <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Ver →</div>
       </div>
-      <div class="stat-card clickable" style="border:1px solid var(--border)" onclick="openDrillDown('Cumplimiento',filtered,'${pct}% — ${done} de ${total}')">
+      <div class="stat-card clickable" style="border:1px solid var(--border)" onclick="drillSet('total','Cumplimiento','${pct}% — ${done} de ${total}')">
         <div class="stat-number" style="color:${pctColor(pct)}">${pct}%</div><div class="stat-label">Cumplimiento</div>
         <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Ver →</div>
       </div>
     </div>
     <div class="stats-row" style="margin-bottom:16px">
-      <div class="stat-card clickable" style="border:1px solid var(--border)" onclick="openDrillDown('Pendientes',filtered.filter(t=>t.status===\'pending\'),'${rangeDesc}')">
+      <div class="stat-card clickable" style="border:1px solid var(--border)" onclick="drillSet('pending','Pendientes','${rangeDesc}')">
         <div class="stat-number" style="color:var(--amber)">${pending}</div><div class="stat-label">Pendientes</div>
         <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Ver →</div>
       </div>
-      <div class="stat-card s-high clickable" onclick="openDrillDown('Bloqueadas',filtered.filter(t=>t.status===\'blocked\'),'Requieren atención')">
+      <div class="stat-card s-high clickable" onclick="drillSet('blocked','Bloqueadas','Requieren atención')">
         <div class="stat-number">${blocked}</div><div class="stat-label">Bloqueadas</div>
         <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Ver →</div>
       </div>
@@ -2331,10 +2348,10 @@ function renderSummary(){
     <div class="summary-day-table">${dayRowsHtml}</div>`:''}
 
     <div class="summary-status-legend" style="margin-top:14px">
-      <span style="cursor:pointer" onclick="openDrillDown('Pendientes',filtered.filter(t=>t.status===\'pending\'),'')"><span class="status-dot pending"></span> Pendiente: ${pending}</span>
-      <span style="cursor:pointer" onclick="openDrillDown('En Progreso',filtered.filter(t=>t.status===\'in_progress\'),'')"><span class="status-dot in_progress"></span> En Progreso: ${inProg}</span>
-      <span style="cursor:pointer" onclick="openDrillDown('Completadas',filtered.filter(t=>t.status===\'completed\'),'')"><span class="status-dot completed"></span> Completada: ${done}</span>
-      <span style="cursor:pointer" onclick="openDrillDown('Bloqueadas',filtered.filter(t=>t.status===\'blocked\'),'')"><span class="status-dot blocked"></span> Bloqueada: ${blocked}</span>
+      <span style="cursor:pointer" onclick="drillSet('pending','Pendientes','')"><span class="status-dot pending"></span> Pendiente: ${pending}</span>
+      <span style="cursor:pointer" onclick="drillSet('in_progress','En Progreso','')"><span class="status-dot in_progress"></span> En Progreso: ${inProg}</span>
+      <span style="cursor:pointer" onclick="drillSet('completed','Completadas','')"><span class="status-dot completed"></span> Completada: ${done}</span>
+      <span style="cursor:pointer" onclick="drillSet('blocked','Bloqueadas','')"><span class="status-dot blocked"></span> Bloqueada: ${blocked}</span>
     </div>`;
 }
 
@@ -2359,6 +2376,9 @@ function toggleSumStatus(id){
 function clearSumFilters(){
   sumFilter={period:'today',dateFrom:'',dateTo:'',members:[],statuses:[]};
   renderSummary();
+}
+function drillSet(key,title,subtitle){
+  openDrillDown(title,_sumDrillData[key]||[],subtitle||'');
 }
 
 // ── WEEKLY ──
