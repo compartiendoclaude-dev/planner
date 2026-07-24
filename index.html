@@ -4181,13 +4181,20 @@ async function sendLoginPushSummary(){
   const _wkStart=getWeekStart(new Date());
   const _wkEnd=addDays(_wkStart,6);
   const _wkExpanded=expandTasks(tasks,_wkStart,_wkEnd);
-  const openTasks=_wkExpanded.filter(t=>{
+  const _allOpen=_wkExpanded.filter(t=>{
     const isRec=t.recurrence&&t.recurrence!=='once';
     const st=isRec?getInstanceStatus(t,t.specific_date||fmtDate(new Date())):t.status;
     return st!=='completed';
   });
-  // Asignadas específicamente al usuario actual
-  const myTasks=openTasks.filter(t=>(t.assigned_to||[]).includes(currentMember.id));
+  // Admin: ve todas las tareas del equipo esta semana
+  // Miembro: solo ve las tareas asignadas a él/ella
+  const openTasks=isAdmin
+    ? _allOpen
+    : _allOpen.filter(t=>(t.assigned_to||[]).includes(currentMember.id));
+  // myTasks: para el conteo "asignadas a ti" (solo relevante para admins)
+  const myTasks=isAdmin
+    ? _allOpen.filter(t=>(t.assigned_to||[]).includes(currentMember.id))
+    : openTasks;
 
   // Si no hay nada abierto, no molestar
   if(!openTasks.length)return;
